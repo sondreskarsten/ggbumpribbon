@@ -10,7 +10,10 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
+Sigmoid-curved filled ribbons and lines for rank comparison charts in
+ggplot2. Two geoms: `geom_bump_ribbon()` for filled areas and
+`geom_bump_line()` for stroked paths — both using the same logistic
+sigmoid interpolation.
 
 <img src="man/figures/README-reputation-1.png" alt="" width="100%" />
 
@@ -118,6 +121,11 @@ Code to reproduce (requires ggflags + countrycode)
 </summary>
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+library(ggflags)
+library(countrycode)
+
 both <- data.frame(stringsAsFactors = FALSE,
   country   = c("U.S.","Japan","Germany","France","UK","Italy","China","Canada",
                 "Mexico","Spain","Netherlands","India","Saudi Arabia","Australia","Brazil"),
@@ -139,7 +147,7 @@ enter_only_gdp <- data.frame(stringsAsFactors = FALSE,
 
 ov2 <- c("U.S."="us","UK"="gb","S. Korea"="kr","Turkey"="tr")
 iso2 <- function(x) ifelse(x %in% names(ov2), ov2[x],
-  tolower(countrycode::countrycode(x, "country.name", "iso2c", warn = FALSE)))
+  tolower(countrycode(x, "country.name", "iso2c", warn = FALSE)))
 
 both$iso2           <- iso2(both$country)
 exit_only_gdp$iso2  <- iso2(exit_only_gdp$country)
@@ -204,13 +212,13 @@ ggplot() +
   scale_x_continuous(limits = c(0.12, 2.88)) +
   geom_text(data = lbl_l_gdp, aes(x = 0.20, y = y, label = y),
     inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.2, fontface = "bold") +
-  ggflags::geom_flag(data = lbl_l_gdp, aes(x = 0.30, y = y, country = iso2),
+  geom_flag(data = lbl_l_gdp, aes(x = 0.30, y = y, country = iso2),
     inherit.aes = FALSE, size = 2.5) +
   geom_text(data = lbl_l_gdp, aes(x = 0.38, y = y, label = country),
     inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8, fontface = "bold") +
   geom_text(data = both, aes(x = 0.95, y = rank_from, label = gdp_l_label),
     inherit.aes = FALSE, hjust = 1, colour = "grey75", size = 2.5) +
-  ggflags::geom_flag(data = lbl_r_gdp, aes(x = 2.07, y = y, country = iso2),
+  geom_flag(data = lbl_r_gdp, aes(x = 2.07, y = y, country = iso2),
     inherit.aes = FALSE, size = 2.5) +
   geom_text(data = lbl_r_gdp, aes(x = 2.15, y = y, label = country),
     inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8, fontface = "bold") +
@@ -220,13 +228,13 @@ ggplot() +
     inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.2, fontface = "bold") +
   geom_text(data = exit_only_gdp, aes(x = 0.20, y = rank_from, label = rank_from),
     inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 3.2, fontface = "bold") +
-  ggflags::geom_flag(data = exit_only_gdp, aes(x = 0.30, y = rank_from, country = iso2),
+  geom_flag(data = exit_only_gdp, aes(x = 0.30, y = rank_from, country = iso2),
     inherit.aes = FALSE, size = 2.5) +
   geom_text(data = exit_only_gdp, aes(x = 0.38, y = rank_from, label = country),
     inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 2.8, fontface = "bold") +
   geom_text(data = exit_only_gdp, aes(x = 0.95, y = rank_from, label = gdp_label),
     inherit.aes = FALSE, hjust = 1, colour = "grey45", size = 2.5) +
-  ggflags::geom_flag(data = enter_only_gdp, aes(x = 2.07, y = rank_to, country = iso2),
+  geom_flag(data = enter_only_gdp, aes(x = 2.07, y = rank_to, country = iso2),
     inherit.aes = FALSE, size = 2.5) +
   geom_text(data = enter_only_gdp, aes(x = 2.15, y = rank_to, label = country),
     inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 2.8, fontface = "bold") +
@@ -327,6 +335,11 @@ ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 ## `geom_bump_line()`
 
+The line counterpart to `geom_bump_ribbon()`. Uses sigmoid curves
+between rank positions but renders as stroked paths via `GeomPath`
+instead of filled areas. Map `colour = after_stat(avg_y)` instead of
+`fill`.
+
 ``` r
 df <- data.frame(
   x     = rep(1:2, each = 5),
@@ -349,6 +362,21 @@ ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
 ```
 
 <img src="man/figures/README-bumpline-1.png" alt="" width="100%" />
+
+## Multi-bend curves
+
+The number of bends is controlled entirely by the data shape, not by
+parameters. Two x-values per group produce one sigmoid. Four x-values —
+with the middle two holding position at the departure and arrival y —
+produce the “exit-channel-enter” pattern seen in the GDP hero above:
+
+``` r
+# 1 sigmoid:  x = c(1, 2)
+# 3 sigmoids: x = c(1, 1.35, 1.65, 2),  y = c(from, from, to, to)
+```
+
+Adjusting the gap between the middle x-values (`1.3`/`1.7` vs
+`1.45`/`1.55`) controls how narrow the central channel is.
 
 ## mtcars
 
@@ -388,6 +416,9 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 ### 1. The Grammy Bump — slope chart
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 grammy <- data.frame(stringsAsFactors = FALSE,
   group     = c("Adele","Taylor Swift","Billie Eilish","Beyonce",
                 "Daft Punk","Bruno Mars","Mumford & Sons","Beck"),
@@ -430,6 +461,9 @@ ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
 ### 2. Programming Languages — multi-period lines
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 langs <- c("Python","JavaScript","Java","TypeScript","Go","C++","Rust","PHP")
 df <- data.frame(stringsAsFactors = FALSE,
   group = rep(langs, 5),
@@ -462,6 +496,9 @@ ggplot(df, aes(x, y, group = group, colour = group)) +
 ### 3. Leading Causes of Death — multi-period ribbon
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 causes <- c("Heart Disease","Cancer","Accidents","Stroke",
             "Diabetes","Alzheimer's","Influenza","Kidney Disease")
 df <- data.frame(stringsAsFactors = FALSE,
@@ -497,6 +534,9 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 ### 4. Quality of Life — slope ribbon with entries/exits
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 both <- data.frame(stringsAsFactors = FALSE,
   group     = c("Netherlands","Denmark","Switzerland","Norway","Finland",
                 "Germany","Austria","Australia"),
@@ -564,12 +604,14 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `ymin`   | Lower ribbon boundary (`geom_bump_ribbon()` only)                                                          |
 | `ymax`   | Upper ribbon boundary (`geom_bump_ribbon()` only)                                                          |
 
-## Convenience functions
+## Functions
 
-| Function            | Description                                                   |
-|---------------------|---------------------------------------------------------------|
-| `scale_fill_rank()` | Green-yellow-red gradient scale with `guide = "none"` default |
-| `theme_bump()`      | Dark background theme for rank comparison infographics        |
+| Function             | Description                                                             |
+|----------------------|-------------------------------------------------------------------------|
+| `geom_bump_ribbon()` | Sigmoid-curved filled ribbon between rank positions. Uses `GeomRibbon`. |
+| `geom_bump_line()`   | Sigmoid-curved line between rank positions. Uses `GeomPath`.            |
+| `scale_fill_rank()`  | Green-yellow-red gradient scale with `guide = "none"` default           |
+| `theme_bump()`       | Dark background theme for rank comparison infographics                  |
 
 ## Architecture
 
