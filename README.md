@@ -12,7 +12,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 
-<a href="https://raw.githubusercontent.com/sondreskarsten/ggbumpribbon/main/man/figures/README-reputation.png"><img src="man/figures/README-reputation.png" width="55%" /></a>
+<img src="man/figures/README-reputation-1.png" alt="" width="100%" />
 
 <details>
 <summary>

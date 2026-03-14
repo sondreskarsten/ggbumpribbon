@@ -23,12 +23,7 @@ knitr::opts_chunk$set(
 
 Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 
-<a href="https://raw.githubusercontent.com/sondreskarsten/ggbumpribbon/main/man/figures/README-reputation.png"><img src="man/figures/README-reputation.png" width="55%" /></a>
-
-<details>
-<summary>Code to reproduce (requires ggflags + countrycode)</summary>
-
-```{r reputation, eval = FALSE}
+```{r reputation, echo = FALSE, fig.width = 7, fig.height = 17, dpi = 200}
 library(ggplot2)
 library(ggbumpribbon)
 library(ggflags)
@@ -110,6 +105,12 @@ ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
        subtitle = "Reputation Lab ranked the reputations of 60 leading economies\nin 2025, shedding light on their international standing.",
        caption  = "Source: Reputation Lab | Made with ggbumpribbon") +
   theme_bump()
+```
+
+<details>
+<summary>Code to reproduce (requires ggflags + countrycode)</summary>
+
+```{r ref.label = "reputation", eval = FALSE}
 ```
 
 Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
