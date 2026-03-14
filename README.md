@@ -356,33 +356,42 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 ## Gallery
 
 <details>
-<summary>Click to expand all examples</summary>
+<summary>Click to expand — 10 domains + parameter examples</summary>
 
-### Lines
+### Real-world domains
 
-**Basic** | **3-period** | **3-bend channel**
+**1. Car Colors — Consumer** | **2. GDP — Economics** | **3. Languages — Tech**
 :---:|:---:|:---:
-<img src="man/figures/ex-line-basic.png" width="100%" /> | <img src="man/figures/ex-line-multiperiod.png" width="100%" /> | <img src="man/figures/ex-line-3bend.png" width="100%" />
+<img src="man/figures/ex-car-colors.png" width="100%" /> | <img src="man/figures/ex-gdp.png" width="100%" /> | <img src="man/figures/ex-languages.png" width="100%" />
+`geom_bump_line()` + `scale_colour_manual()` with actual car colors | 3-bend channel + `theme_bump(bg = "#0b1a38")` | `geom_bump_line()` + `geom_point()` + `scale_colour_brewer()`
 
-### Ribbons
-
-**Basic** | **Narrow (`width = 0.3`)** | **Wide (`width = 1.5`)**
+**4. Causes of Death — Health** | **5. Grammy Bump — Music** | **6. Social Media — Internet**
 :---:|:---:|:---:
-<img src="man/figures/ex-ribbon-basic.png" width="100%" /> | <img src="man/figures/ex-ribbon-narrow.png" width="100%" /> | <img src="man/figures/ex-ribbon-wide.png" width="100%" />
+<img src="man/figures/ex-health.png" width="100%" /> | <img src="man/figures/ex-grammy.png" width="100%" /> | <img src="man/figures/ex-social-media.png" width="100%" />
+`geom_bump_ribbon()` multi-period | Slope chart + gold/black custom theme | `geom_bump_line()` with platform brand colors
 
-**3-period** | **Discrete fill** | **Ribbon + line overlay**
+**7. Street Food — Travel** | **8. Innovation Index — Governance** | **9. UK Election — Politics**
 :---:|:---:|:---:
-<img src="man/figures/ex-ribbon-multiperiod.png" width="100%" /> | <img src="man/figures/ex-discrete-fill.png" width="100%" /> | <img src="man/figures/ex-ribbon-line-overlay.png" width="100%" />
+<img src="man/figures/ex-street-food.png" width="100%" /> | <img src="man/figures/ex-innovation.png" width="100%" /> | <img src="man/figures/ex-uk-election.png" width="100%" />
+`geom_bump_ribbon()` on warm `#fef3c7` background | `geom_bump_ribbon()` + `scale_fill_viridis_c()` | `geom_bump_line()` + `geom_point()` with party colours
 
-### Smooth parameter
+**10. Quality of Life — Demographics** | |
+:---:|:---:|:---:
+<img src="man/figures/ex-quality-of-life.png" width="70%" /> | |
+
+### Parameter variations
+
+**Smooth comparison** (`smooth = 2, 5, 8, 15`)
 
 <img src="man/figures/ex-smooth-comparison.png" width="90%" />
 
-### Themes
-
-**Light** | **Dark** | **30 items**
+**Narrow (`width = 0.3`)** | **Wide (`width = 1.5`)** | **Ribbon + line overlay**
 :---:|:---:|:---:
-<img src="man/figures/ex-light-theme.png" width="100%" /> | <img src="man/figures/ex-mtcars.png" width="100%" /> | <img src="man/figures/ex-large-n.png" width="50%" />
+<img src="man/figures/ex-ribbon-narrow.png" width="100%" /> | <img src="man/figures/ex-ribbon-wide.png" width="100%" /> | <img src="man/figures/ex-ribbon-line-overlay.png" width="100%" />
+
+**Discrete fill** | **Light theme** | **30 items**
+:---:|:---:|:---:
+<img src="man/figures/ex-discrete-fill.png" width="100%" /> | <img src="man/figures/ex-light-theme.png" width="100%" /> | <img src="man/figures/ex-large-n.png" width="50%" />
 
 </details>
 
