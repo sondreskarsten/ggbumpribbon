@@ -38,3 +38,10 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
   scale_fill_rank(limits = c(1, 5)) +
   scale_y_reverse()
 }
+\seealso{
+\code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}, \code{\link[=geom_bump_ribbon]{geom_bump_ribbon()}}
+
+Other bump scales: 
+\code{\link{theme_bump}()}
+}
+\concept{bump scales}

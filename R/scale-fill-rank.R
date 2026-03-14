@@ -10,6 +10,8 @@
 #' @param ... Passed to [ggplot2::scale_fill_gradientn()].
 #'
 #' @returns A ggplot2 scale object.
+#' @family bump scales
+#' @seealso [ggplot2::scale_fill_gradientn()], [geom_bump_ribbon()]
 #' @export
 #'
 #' @examples

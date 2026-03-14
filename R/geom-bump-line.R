@@ -44,6 +44,7 @@
 #'
 #' @returns A [ggplot2 layer][ggplot2::layer()] that can be added to a plot.
 #' @family bump geoms
+#' @seealso [geom_bump_ribbon()], [ggplot2::geom_path()]
 #' @export
 #'
 #' @examples
@@ -96,7 +97,7 @@ geom_bump_line <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_bump_line
+#' @rdname ggbumpribbon-ggproto
 #' @format NULL
 #' @usage NULL
 #' @export

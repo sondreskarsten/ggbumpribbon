@@ -1,4 +1,4 @@
-#' Dark theme for bump ribbon charts
+#' Dark theme for bump charts
 #'
 #' A minimal dark theme based on [ggplot2::theme_void()] with a dark
 #' background and light text, suited to rank comparison infographics.
@@ -8,6 +8,8 @@
 #' @param base_size Base font size. Default `10`.
 #'
 #' @returns A ggplot2 [theme][ggplot2::theme()] object.
+#' @family bump scales
+#' @seealso [ggplot2::theme_void()], [geom_bump_ribbon()]
 #' @export
 #'
 #' @examples

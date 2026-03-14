@@ -5,12 +5,11 @@ Authors@R:
     person("Sondre", "Skarsten", email = "sondreskarsten@gmail.com",
            role = c("aut", "cre"))
 Description: A ggplot2 extension providing sigmoid-curved filled ribbons
-    between discrete rank positions. While ggbump provides sigmoid rank
+    and lines between discrete rank positions. Offers geom_bump_ribbon()
+    for filled areas and geom_bump_line() for stroked paths, both using
+    logistic sigmoid interpolation. While ggbump provides sigmoid rank
     lines and ggforce provides bezier ribbons, no existing package renders
-    sigmoid-curved filled areas positioned at exact rank coordinates. The
-    package implements a custom Stat that computes ribbon boundaries via
-    logistic interpolation, delegating rendering to ggplot2's built-in
-    GeomRibbon.
+    sigmoid-curved filled areas positioned at exact rank coordinates.
 License: MIT + file LICENSE
 URL: https://github.com/sondreskarsten/ggbumpribbon
 BugReports: https://github.com/sondreskarsten/ggbumpribbon/issues

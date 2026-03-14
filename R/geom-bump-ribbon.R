@@ -33,6 +33,8 @@
 #' @param width Ribbon full width in data units. Default is `0.8`.
 #'
 #' @returns A [ggplot2 layer][ggplot2::layer()] that can be added to a plot.
+#' @family bump geoms
+#' @seealso [geom_bump_line()], [ggplot2::geom_ribbon()]
 #' @export
 #'
 #' @examples
@@ -102,7 +104,7 @@ geom_bump_ribbon <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_bump_ribbon
+#' @rdname ggbumpribbon-ggproto
 #' @format NULL
 #' @usage NULL
 #' @export
