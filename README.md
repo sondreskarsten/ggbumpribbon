@@ -108,6 +108,152 @@ Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
 
 </details>
 
+### `geom_bump_line()` — Top 20 Economies 1980 vs 2025
+
+<img src="man/figures/README-gdp-1.png" alt="" width="100%" />
+
+<details>
+<summary>
+Code to reproduce (requires ggflags + countrycode)
+</summary>
+
+``` r
+both <- data.frame(stringsAsFactors = FALSE,
+  country   = c("U.S.","Japan","Germany","France","UK","Italy","China","Canada",
+                "Mexico","Spain","Netherlands","India","Saudi Arabia","Australia","Brazil"),
+  rank_from = c(1,2,3,4,5,6,7,8,9,11,12,13,14,15,16),
+  rank_to   = c(1,4,3,7,6,8,2,10,13,12,18,5,19,15,11),
+  gdp_1980  = c(2.9,1.1,0.857,0.695,0.605,0.480,0.304,0.276,
+                0.242,0.231,0.194,0.186,0.165,0.163,0.146),
+  gdp_2025  = c(30.6,4.3,5.0,3.4,4.0,2.5,19.4,2.3,1.9,1.9,1.3,4.1,1.3,1.8,2.3))
+
+exit_only_gdp <- data.frame(stringsAsFactors = FALSE,
+  country   = c("Argentina","Sweden","Belgium","Switzerland","Iran"),
+  rank_from = c(10,17,18,19,20),
+  gdp_1980  = c(0.234,0.140,0.123,0.122,0.117))
+
+enter_only_gdp <- data.frame(stringsAsFactors = FALSE,
+  country   = c("Russia","S. Korea","Turkey","Indonesia","Poland"),
+  rank_to   = c(9,14,16,17,20),
+  gdp_2025  = c(2.5,1.9,1.6,1.4,1.0))
+
+ov2 <- c("U.S."="us","UK"="gb","S. Korea"="kr","Turkey"="tr")
+iso2 <- function(x) ifelse(x %in% names(ov2), ov2[x],
+  tolower(countrycode::countrycode(x, "country.name", "iso2c", warn = FALSE)))
+
+both$iso2           <- iso2(both$country)
+exit_only_gdp$iso2  <- iso2(exit_only_gdp$country)
+enter_only_gdp$iso2 <- iso2(enter_only_gdp$country)
+
+both_long <- data.frame(
+  x       = rep(c(1, 1.35, 1.65, 2), each = nrow(both)),
+  y       = c(both$rank_from, both$rank_from, both$rank_to, both$rank_to),
+  group   = rep(both$country, 4),
+  country = rep(both$country, 4),
+  iso2    = rep(both$iso2, 4))
+
+lbl_l_gdp <- both_long[both_long$x == 1, ]
+lbl_r_gdp <- both_long[both_long$x == 2, ]
+
+fmt_gdp <- function(x) ifelse(x >= 1,
+  paste0("$", formatC(x, format = "f", digits = 1), "T"),
+  paste0("$", round(x * 1000), "B"))
+
+both$gdp_l_label          <- fmt_gdp(both$gdp_1980)
+both$gdp_r_label          <- fmt_gdp(both$gdp_2025)
+exit_only_gdp$gdp_label   <- fmt_gdp(exit_only_gdp$gdp_1980)
+enter_only_gdp$gdp_label  <- fmt_gdp(enter_only_gdp$gdp_2025)
+
+gdp_max   <- 31
+bar_left  <- 2.22
+bar_width <- 0.55
+bars_r <- data.frame(y = both$rank_to, xmin = bar_left,
+  xmax = bar_left + bar_width * (both$gdp_2025 / gdp_max), gdp = both$gdp_2025)
+bars_enter <- data.frame(y = enter_only_gdp$rank_to, xmin = bar_left,
+  xmax = bar_left + bar_width * (enter_only_gdp$gdp_2025 / gdp_max), gdp = enter_only_gdp$gdp_2025)
+
+row_bg_l <- data.frame(y = 1:20, xmin = 0.15, xmax = 0.98,
+  fill = ifelse(1:20 %% 2 == 0, "#0a1a3a", "#0e2248"))
+row_bg_r <- data.frame(y = 1:20, xmin = 2.02, xmax = 2.85,
+  fill = ifelse(1:20 %% 2 == 0, "#0a1a3a", "#0e2248"))
+
+bg <- "#0b1a38"
+
+ggplot() +
+  geom_rect(data = row_bg_l,
+    aes(xmin = xmin, xmax = xmax, ymin = y - 0.48, ymax = y + 0.48),
+    fill = row_bg_l$fill, colour = NA) +
+  geom_rect(data = row_bg_r,
+    aes(xmin = xmin, xmax = xmax, ymin = y - 0.48, ymax = y + 0.48),
+    fill = row_bg_r$fill, colour = NA) +
+  geom_rect(data = bars_r,
+    aes(xmin = xmin, xmax = xmax, ymin = y - 0.35, ymax = y + 0.35),
+    fill = scales::seq_gradient_pal("#3b82f6", "#ec4899")(bars_r$gdp / gdp_max),
+    colour = NA, alpha = 0.7) +
+  geom_rect(data = bars_enter,
+    aes(xmin = xmin, xmax = xmax, ymin = y - 0.35, ymax = y + 0.35),
+    fill = scales::seq_gradient_pal("#3b82f6", "#ec4899")(bars_enter$gdp / gdp_max),
+    colour = NA, alpha = 0.5) +
+  geom_bump_line(data = both_long,
+    aes(x = x, y = y, group = group, colour = after_stat(avg_y)),
+    linewidth = 0.7, smooth = 10) +
+  scale_colour_gradientn(
+    colours = c("#fbbf24","#f59e0b","#22d3ee","#818cf8","#a78bfa"),
+    guide = "none") +
+  scale_y_reverse(expand = expansion(mult = c(0.03, 0.03))) +
+  scale_x_continuous(limits = c(0.12, 2.88)) +
+  geom_text(data = lbl_l_gdp, aes(x = 0.20, y = y, label = y),
+    inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.2, fontface = "bold") +
+  ggflags::geom_flag(data = lbl_l_gdp, aes(x = 0.30, y = y, country = iso2),
+    inherit.aes = FALSE, size = 2.5) +
+  geom_text(data = lbl_l_gdp, aes(x = 0.38, y = y, label = country),
+    inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8, fontface = "bold") +
+  geom_text(data = both, aes(x = 0.95, y = rank_from, label = gdp_l_label),
+    inherit.aes = FALSE, hjust = 1, colour = "grey75", size = 2.5) +
+  ggflags::geom_flag(data = lbl_r_gdp, aes(x = 2.07, y = y, country = iso2),
+    inherit.aes = FALSE, size = 2.5) +
+  geom_text(data = lbl_r_gdp, aes(x = 2.15, y = y, label = country),
+    inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8, fontface = "bold") +
+  geom_text(data = both, aes(x = 2.78, y = rank_to, label = gdp_r_label),
+    inherit.aes = FALSE, hjust = 1, colour = "white", size = 2.5) +
+  geom_text(data = lbl_r_gdp, aes(x = 2.82, y = y, label = y),
+    inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.2, fontface = "bold") +
+  geom_text(data = exit_only_gdp, aes(x = 0.20, y = rank_from, label = rank_from),
+    inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 3.2, fontface = "bold") +
+  ggflags::geom_flag(data = exit_only_gdp, aes(x = 0.30, y = rank_from, country = iso2),
+    inherit.aes = FALSE, size = 2.5) +
+  geom_text(data = exit_only_gdp, aes(x = 0.38, y = rank_from, label = country),
+    inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 2.8, fontface = "bold") +
+  geom_text(data = exit_only_gdp, aes(x = 0.95, y = rank_from, label = gdp_label),
+    inherit.aes = FALSE, hjust = 1, colour = "grey45", size = 2.5) +
+  ggflags::geom_flag(data = enter_only_gdp, aes(x = 2.07, y = rank_to, country = iso2),
+    inherit.aes = FALSE, size = 2.5) +
+  geom_text(data = enter_only_gdp, aes(x = 2.15, y = rank_to, label = country),
+    inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 2.8, fontface = "bold") +
+  geom_text(data = enter_only_gdp, aes(x = 2.78, y = rank_to, label = gdp_label),
+    inherit.aes = FALSE, hjust = 1, colour = "grey50", size = 2.5) +
+  geom_text(data = enter_only_gdp, aes(x = 2.82, y = rank_to, label = rank_to),
+    inherit.aes = FALSE, hjust = 0, colour = "grey50", size = 3.2, fontface = "bold") +
+  annotate("text", x = 0.55, y = -0.8, label = "1980",
+    colour = "#60a5fa", size = 7, fontface = "bold") +
+  annotate("text", x = 2.45, y = -0.8, label = "2025",
+    colour = "#60a5fa", size = 7, fontface = "bold") +
+  annotate("segment", x = 0.85, xend = 2.15, y = -0.8, yend = -0.8,
+    colour = "grey40", linewidth = 0.3) +
+  labs(title   = "TOP 20 ECONOMIES",
+       caption = "Source: IMF, World Economic Outlook October 2025 | Made with ggbumpribbon") +
+  theme_void() +
+  theme(plot.background  = element_rect(fill = bg, colour = NA),
+        panel.background = element_rect(fill = bg, colour = NA),
+        plot.title       = element_text(colour = "#93c5fd", size = 22, face = "bold",
+                                        hjust = 0.5, margin = margin(t = 12, b = 2)),
+        plot.caption     = element_text(colour = "grey45", size = 6,
+                                        hjust = 0.5, margin = margin(t = 8, b = 5)),
+        plot.margin      = margin(8, 8, 8, 8))
+```
+
+</details>
+
 ## The gap
 
 | Package          | What it does                                       | What it lacks                                           |
@@ -212,7 +358,7 @@ mt$car <- rownames(mt)
 
 mt_long <- data.frame(
   x     = rep(1:2, each = 10),
-  y     = c(rank(-mt$mpg), rank(-mt$hp)),
+  y     = c(rank(-mt$mpg, ties.method = "first"), rank(-mt$hp, ties.method = "first")),
   group = rep(mt$car, 2)
 )
 
@@ -306,7 +452,7 @@ ggplot(df, aes(x, y, group = group, colour = group)) +
   geom_text(data = lbl_r, aes(x = 2024.3, y = y, label = group),
             inherit.aes = FALSE, hjust = 0, size = 2.8, colour = "grey20") +
   labs(title = "Programming Language Popularity on GitHub",
-       subtitle = "Simulated rank by pull requests 2016–2024", x = NULL, y = "Rank") +
+       subtitle = "Simulated rank by pull requests 2016-2024", x = NULL, y = "Rank") +
   theme_light(base_size = 10) +
   theme(panel.grid.minor = element_blank(), plot.title = element_text(face = "bold"))
 ```
@@ -340,7 +486,7 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_text(data = lbl_r, aes(x = 2020.2, y = y, label = y),
             inherit.aes = FALSE, hjust = 0, size = 2.2, colour = "grey50") +
   labs(title = "Leading Causes of Death in the U.S.",
-       subtitle = "Simulated rank changes 2000–2020", x = NULL, y = "Rank") +
+       subtitle = "Simulated rank changes 2000-2020", x = NULL, y = "Rank") +
   theme_minimal(base_size = 10) +
   theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(),
         plot.title = element_text(face = "bold"))
@@ -374,17 +520,17 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
             inherit.aes = FALSE, hjust = 1, colour = "grey30", size = 3) +
   geom_text(data = lbl_l, aes(x = 0.88, y = y, label = group),
             inherit.aes = FALSE, hjust = 1, colour = "grey20", size = 3.2, fontface = "bold") +
-  geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y),
+  geom_text(data = lbl_r, aes(x = 2.05, y = y, label = y),
             inherit.aes = FALSE, hjust = 0, colour = "grey30", size = 3) +
-  geom_text(data = lbl_r, aes(x = 2.12, y = y, label = group),
+  geom_text(data = lbl_r, aes(x = 2.14, y = y, label = group),
             inherit.aes = FALSE, hjust = 0, colour = "grey20", size = 3.2, fontface = "bold") +
   geom_text(data = exit_only, aes(x = 0.94, y = rank_from, label = rank_from),
             inherit.aes = FALSE, hjust = 1, colour = "grey65", size = 3) +
   geom_text(data = exit_only, aes(x = 0.88, y = rank_from, label = group),
             inherit.aes = FALSE, hjust = 1, colour = "grey65", size = 3.2) +
-  geom_text(data = enter_only, aes(x = 2.06, y = rank_to, label = rank_to),
+  geom_text(data = enter_only, aes(x = 2.05, y = rank_to, label = rank_to),
             inherit.aes = FALSE, hjust = 0, colour = "grey65", size = 3) +
-  geom_text(data = enter_only, aes(x = 2.12, y = rank_to, label = group),
+  geom_text(data = enter_only, aes(x = 2.14, y = rank_to, label = group),
             inherit.aes = FALSE, hjust = 0, colour = "grey65", size = 3.2) +
   annotate("text", x = 1, y = -0.5, label = "2015", colour = "grey30",
            size = 5.5, fontface = "bold") +
