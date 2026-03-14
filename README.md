@@ -62,7 +62,7 @@ lbl_r <- ranks_long[ranks_long$x == 2, ]
 ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(alpha = 0.85, width = 0.8) +
   scale_fill_gradientn(
-    colours = c("#c0392b","#eb4d4b","#f0932b","#f7dc6f","#a8e063","#2ecc71"),
+    colours = c("#2ecc71","#a8e063","#f7dc6f","#f0932b","#eb4d4b","#c0392b"),
     guide = "none"
   ) +
   scale_y_reverse(expand = expansion(mult = c(0.015, 0.015))) +
@@ -205,17 +205,6 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `avg_y` | Mean of all y values in the group — useful for rank-based fill via `after_stat(avg_y)` |
 | `ymin` | Lower ribbon boundary |
 | `ymax` | Upper ribbon boundary |
-
-## Note on `scale_y_reverse()`
-
-`scale_y_reverse()` negates y values before the Stat computes `avg_y`. When using `scale_fill_gradientn()`, reverse your colour vector so green maps to the most-negative (best) values:
-
-```r
-scale_fill_gradientn(
-  colours = c("#c0392b", "#f0932b", "#f7dc6f", "#a8e063", "#2ecc71"),
-  guide = "none"
-)
-```
 
 ## Convenience functions
 

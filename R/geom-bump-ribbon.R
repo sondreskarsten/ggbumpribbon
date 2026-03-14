@@ -21,8 +21,9 @@
 #' \describe{
 #'   \item{`ymin`}{Lower ribbon boundary.}
 #'   \item{`ymax`}{Upper ribbon boundary.}
-#'   \item{`avg_y`}{Mean of all y values in the group; useful for
-#'     rank-based fill via `after_stat(avg_y)`.}
+#'   \item{`avg_y`}{Mean of y values in the group, inverse-transformed to
+#'     original data space. Works correctly with `scale_y_reverse()` and
+#'     other scale transforms. Map to fill via `after_stat(avg_y)`.}
 #' }
 #'
 #' @inheritParams ggplot2::geom_ribbon
@@ -116,8 +117,13 @@ StatBumpRibbon <- ggproto("StatBumpRibbon", Stat,
 
     if (nrow(data) < 2) return(data.frame())
 
-    hw    <- width / 2
-    avg_y <- mean(data$y)
+    hw      <- width / 2
+    mean_y  <- mean(data$y)
+    avg_y   <- if (!is.null(scales$y) && !is.null(scales$y$trans)) {
+      scales$y$trans$inverse(mean_y)
+    } else {
+      mean_y
+    }
     segs  <- nrow(data) - 1
     parts <- vector("list", segs)
 

@@ -133,8 +133,9 @@ ggbump's \code{geom_bump()} (\url{https://github.com/davidsjoberg/ggbump}).
 \describe{
 \item{\code{ymin}}{Lower ribbon boundary.}
 \item{\code{ymax}}{Upper ribbon boundary.}
-\item{\code{avg_y}}{Mean of all y values in the group; useful for
-rank-based fill via \code{after_stat(avg_y)}.}
+\item{\code{avg_y}}{Mean of y values in the group, inverse-transformed to
+original data space. Works correctly with \code{scale_y_reverse()} and
+other scale transforms. Map to fill via \code{after_stat(avg_y)}.}
 }
 }
 

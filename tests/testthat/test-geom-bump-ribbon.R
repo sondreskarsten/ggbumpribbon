@@ -42,6 +42,21 @@ test_that("computed avg_y is the group mean", {
   expect_true(all(out$avg_y == 5))
 })
 
+test_that("avg_y recovers original values under scale_y_reverse", {
+  group_data <- data.frame(x = 1:2, y = c(-2, -8))
+  mock_scales <- list(y = list(trans = list(inverse = function(x) -x)))
+  out <- StatBumpRibbon$compute_group(group_data, mock_scales, smooth = 8, n = 50, width = 0.8)
+  expect_true(all(out$avg_y == 5))
+})
+
+test_that("avg_y passthrough when no scale transform", {
+  group_data <- data.frame(x = 1:2, y = c(2, 8))
+  out_null   <- StatBumpRibbon$compute_group(group_data, NULL, smooth = 8, n = 50, width = 0.8)
+  out_empty  <- StatBumpRibbon$compute_group(group_data, list(), smooth = 8, n = 50, width = 0.8)
+  expect_true(all(out_null$avg_y == 5))
+  expect_true(all(out_empty$avg_y == 5))
+})
+
 test_that("width parameter controls ribbon thickness", {
   group_data <- data.frame(x = 1:2, y = c(5, 5))
   thin <- StatBumpRibbon$compute_group(group_data, NULL, width = 0.4)
