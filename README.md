@@ -19,31 +19,38 @@ library(ggbumpribbon)
 library(ggflags)
 library(countrycode)
 
-ranks <- data.frame(
+# countries in both top-10 lists get ribbons
+both <- data.frame(
   country   = c("Switzerland","Norway","Sweden","Canada","Denmark",
-                "New Zealand","Finland","Australia","Ireland","Netherlands"),
-  rank_from = 1:10,
-  rank_to   = c(1, 3, 4, 2, 6, 7, 5, 11, 10, 9)
+                "New Zealand","Finland","Ireland","Netherlands"),
+  rank_from = c(1, 2, 3, 4, 5, 6, 7, 9, 10),
+  rank_to   = c(1, 3, 4, 2, 6, 7, 5, 10, 9)
 )
+
+# countries that exit/enter top-10 get grey labels only
+exit_only  <- data.frame(country = "Australia", rank_from = 8)
+enter_only <- data.frame(country = "Japan",     rank_to   = 8)
 
 ov <- c("U.S."="us","UK"="gb","South Korea"="kr","Czechia"="cz","Taiwan"="tw","UAE"="ae")
-ranks$iso2 <- ifelse(
-  ranks$country %in% names(ov), ov[ranks$country],
-  tolower(countrycode(ranks$country, "country.name", "iso2c", warn = FALSE))
+iso <- function(x) ifelse(x %in% names(ov), ov[x],
+  tolower(countrycode(x, "country.name", "iso2c", warn = FALSE)))
+
+both$iso2       <- iso(both$country)
+exit_only$iso2  <- iso(exit_only$country)
+enter_only$iso2 <- iso(enter_only$country)
+
+both_long <- data.frame(
+  x       = rep(1:2, each = nrow(both)),
+  y       = c(both$rank_from, both$rank_to),
+  group   = rep(both$country, 2),
+  country = rep(both$country, 2),
+  iso2    = rep(both$iso2, 2)
 )
 
-ranks_long <- data.frame(
-  x       = rep(1:2, each = 10),
-  y       = c(ranks$rank_from, ranks$rank_to),
-  group   = rep(ranks$country, 2),
-  country = rep(ranks$country, 2),
-  iso2    = rep(ranks$iso2, 2)
-)
+lbl_l <- both_long[both_long$x == 1, ]
+lbl_r <- both_long[both_long$x == 2, ]
 
-lbl_l <- ranks_long[ranks_long$x == 1, ]
-lbl_r <- ranks_long[ranks_long$x == 2, ]
-
-ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
+ggplot(both_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(alpha = 0.85) +
   scale_fill_gradientn(
     colours = c("#c0392b","#eb4d4b","#f0932b","#f7dc6f","#a8e063","#2ecc71"),
@@ -51,18 +58,34 @@ ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   ) +
   scale_y_reverse(expand = expansion(mult = c(0.04, 0.04))) +
   scale_x_continuous(limits = c(0.15, 2.85)) +
+  # left labels
   geom_text(data = lbl_l, aes(x = 0.94, y = y, label = y),
             inherit.aes = FALSE, hjust = 1, colour = "white", size = 3.5) +
   geom_flag(data = lbl_l, aes(x = 0.87, y = y, country = iso2),
             inherit.aes = FALSE, size = 4.5) +
   geom_text(data = lbl_l, aes(x = 0.80, y = y, label = country),
             inherit.aes = FALSE, hjust = 1, colour = "white", size = 3.5) +
+  # right labels
   geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y),
             inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.5) +
   geom_flag(data = lbl_r, aes(x = 2.13, y = y, country = iso2),
             inherit.aes = FALSE, size = 4.5) +
   geom_text(data = lbl_r, aes(x = 2.20, y = y, label = country),
             inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.5) +
+  # exit: Australia (2024 only, grey)
+  geom_text(data = exit_only, aes(x = 0.94, y = rank_from, label = rank_from),
+            inherit.aes = FALSE, hjust = 1, colour = "grey55", size = 3.5) +
+  geom_flag(data = exit_only, aes(x = 0.87, y = rank_from, country = iso2),
+            inherit.aes = FALSE, size = 4.5) +
+  geom_text(data = exit_only, aes(x = 0.80, y = rank_from, label = country),
+            inherit.aes = FALSE, hjust = 1, colour = "grey55", size = 3.5) +
+  # enter: Japan (2025 only, grey)
+  geom_text(data = enter_only, aes(x = 2.06, y = rank_to, label = rank_to),
+            inherit.aes = FALSE, hjust = 0, colour = "grey55", size = 3.5) +
+  geom_flag(data = enter_only, aes(x = 2.13, y = rank_to, country = iso2),
+            inherit.aes = FALSE, size = 4.5) +
+  geom_text(data = enter_only, aes(x = 2.20, y = rank_to, label = country),
+            inherit.aes = FALSE, hjust = 0, colour = "grey55", size = 3.5) +
   annotate("text", x = 1, y = -0.2, label = "2024 Rank",
            colour = "white", size = 5, fontface = "bold") +
   annotate("text", x = 2, y = -0.2, label = "2025 Rank",
@@ -178,7 +201,7 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 ## Note on `scale_y_reverse()`
 
-`scale_y_reverse()` negates y values before the Stat computes `avg_y`. This means low ranks (good) get negative `avg_y`. When using `scale_fill_gradientn()`, reverse your colour vector so green maps to the most-negative (best) values:
+`scale_y_reverse()` negates y values before the Stat computes `avg_y`. When using `scale_fill_gradientn()`, reverse your colour vector so green maps to the most-negative (best) values:
 
 ```r
 scale_fill_gradientn(
