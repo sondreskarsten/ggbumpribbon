@@ -8,7 +8,77 @@
 
 Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 
-<img src="man/figures/README-basic.png" width="60%" />
+<img src="man/figures/README-reputation.png" width="70%" />
+
+<details>
+<summary>Code to reproduce</summary>
+
+```r
+library(ggplot2)
+library(ggbumpribbon)
+library(ggflags)
+library(countrycode)
+
+ranks <- data.frame(
+  country   = c("Switzerland","Norway","Sweden","Canada","Denmark",
+                "New Zealand","Finland","Australia","Ireland","Netherlands"),
+  rank_from = 1:10,
+  rank_to   = c(1, 3, 4, 2, 6, 7, 5, 11, 10, 9)
+)
+
+ov <- c("U.S."="us","UK"="gb","South Korea"="kr","Czechia"="cz","Taiwan"="tw","UAE"="ae")
+ranks$iso2 <- ifelse(
+  ranks$country %in% names(ov), ov[ranks$country],
+  tolower(countrycode(ranks$country, "country.name", "iso2c", warn = FALSE))
+)
+
+ranks_long <- data.frame(
+  x       = rep(1:2, each = 10),
+  y       = c(ranks$rank_from, ranks$rank_to),
+  group   = rep(ranks$country, 2),
+  country = rep(ranks$country, 2),
+  iso2    = rep(ranks$iso2, 2)
+)
+
+lbl_l <- ranks_long[ranks_long$x == 1, ]
+lbl_r <- ranks_long[ranks_long$x == 2, ]
+
+ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.85) +
+  scale_fill_gradientn(
+    colours = c("#c0392b","#eb4d4b","#f0932b","#f7dc6f","#a8e063","#2ecc71"),
+    guide = "none"
+  ) +
+  scale_y_reverse(expand = expansion(mult = c(0.04, 0.04))) +
+  scale_x_continuous(limits = c(0.15, 2.85)) +
+  geom_text(data = lbl_l, aes(x = 0.94, y = y, label = y),
+            inherit.aes = FALSE, hjust = 1, colour = "white", size = 3.5) +
+  geom_flag(data = lbl_l, aes(x = 0.87, y = y, country = iso2),
+            inherit.aes = FALSE, size = 4.5) +
+  geom_text(data = lbl_l, aes(x = 0.80, y = y, label = country),
+            inherit.aes = FALSE, hjust = 1, colour = "white", size = 3.5) +
+  geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y),
+            inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.5) +
+  geom_flag(data = lbl_r, aes(x = 2.13, y = y, country = iso2),
+            inherit.aes = FALSE, size = 4.5) +
+  geom_text(data = lbl_r, aes(x = 2.20, y = y, label = country),
+            inherit.aes = FALSE, hjust = 0, colour = "white", size = 3.5) +
+  annotate("text", x = 1, y = -0.2, label = "2024 Rank",
+           colour = "white", size = 5, fontface = "bold") +
+  annotate("text", x = 2, y = -0.2, label = "2025 Rank",
+           colour = "white", size = 5, fontface = "bold") +
+  labs(
+    title    = "Countries with the Best Reputations",
+    subtitle = "Top 10 — Reputation Lab 2024 vs 2025",
+    caption  = "Source: Reputation Lab | Made with ggbumpribbon"
+  ) +
+  theme_bump()
+```
+
+Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
+`install.packages("ggflags", repos = c("https://jimjam-slam.r-universe.dev", "https://cloud.r-project.org"))`
+
+</details>
 
 ## The gap
 
@@ -19,8 +89,6 @@ Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 | **ggsankey** | Sankey-style ribbon bumps | *Stacked* positioning, not rank-positioned. GitHub-only |
 | **ggbumpribbon** | **Sigmoid filled ribbons at exact rank positions** | — |
 
-`geom_bump_ribbon()` implements a custom `StatBumpRibbon` that computes sigmoid-curved ribbon boundaries via logistic interpolation, delegating rendering to ggplot2's built-in `GeomRibbon`. This means faceting, coordinate transforms, legends, and all ggplot2 machinery work out of the box.
-
 ## Installation
 
 ```r
@@ -28,11 +96,7 @@ Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 pak::pak("sondreskarsten/ggbumpribbon")
 ```
 
-## Usage
-
-The data format is long: one row per group per time point, with `x` (time), `y` (rank), and `group`.
-
-### Basic: 2 time points
+## Minimal example
 
 ```r
 library(ggplot2)
@@ -46,17 +110,16 @@ df <- data.frame(
 
 ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(alpha = 0.85) +
-  scale_fill_gradientn(
-    colours = c("#2ecc71", "#f7dc6f", "#eb4d4b"),
-    guide = "none"
-  ) +
+  scale_fill_viridis_c(guide = "none") +
   scale_y_reverse() +
-  theme_bump()
+  theme_void()
 ```
 
-### Multi-period: 3+ time points
+<img src="man/figures/README-basic.png" width="60%" />
 
-Ribbons chain automatically across segments:
+## Multi-period
+
+Ribbons chain automatically across 3+ time points:
 
 ```r
 df3 <- data.frame(
@@ -73,7 +136,7 @@ ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 <img src="man/figures/README-multi.png" width="60%" />
 
-### Built-in data: mtcars
+## mtcars
 
 ```r
 mt <- mtcars[1:10, ]
@@ -113,6 +176,17 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `ymin` | Lower ribbon boundary |
 | `ymax` | Upper ribbon boundary |
 
+## Note on `scale_y_reverse()`
+
+`scale_y_reverse()` negates y values before the Stat computes `avg_y`. This means low ranks (good) get negative `avg_y`. When using `scale_fill_gradientn()`, reverse your colour vector so green maps to the most-negative (best) values:
+
+```r
+scale_fill_gradientn(
+  colours = c("#c0392b", "#f0932b", "#f7dc6f", "#a8e063", "#2ecc71"),
+  guide = "none"
+)
+```
+
 ## Convenience functions
 
 | Function | Description |
@@ -130,17 +204,13 @@ User data (x, y, group)
   → GeomRibbon renders filled polygons
 ```
 
-No grid graphics code. The entire package is a data transformation that delegates to ggplot2's rendering pipeline.
+No grid graphics code. The package is a data transformation that delegates to ggplot2's rendering pipeline.
 
 ## Dependencies
 
 **Hard:** ggplot2 (>= 3.5.0), rlang, scales
 
 rlang and scales are already installed as ggplot2 dependencies — zero additional installation burden.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
