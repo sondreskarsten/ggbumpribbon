@@ -8,7 +8,7 @@
 
 Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
 
-<img src="man/figures/README-reputation.png" width="55%" />
+<a href="https://raw.githubusercontent.com/sondreskarsten/ggbumpribbon/main/man/figures/README-reputation.png"><img src="man/figures/README-reputation.png" width="55%" /></a>
 
 <details>
 <summary>Code to reproduce</summary>
