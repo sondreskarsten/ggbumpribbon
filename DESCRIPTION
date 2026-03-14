@@ -12,8 +12,8 @@ Description: A ggplot2 extension providing sigmoid-curved filled ribbons
     logistic interpolation, delegating rendering to ggplot2's built-in
     GeomRibbon.
 License: MIT + file LICENSE
-URL: https://github.com/sondresk/ggbumpribbon
-BugReports: https://github.com/sondresk/ggbumpribbon/issues
+URL: https://github.com/sondreskarsten/ggbumpribbon
+BugReports: https://github.com/sondreskarsten/ggbumpribbon/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 

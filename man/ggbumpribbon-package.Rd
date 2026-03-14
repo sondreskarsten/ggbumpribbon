@@ -11,8 +11,8 @@ A ggplot2 extension providing sigmoid-curved filled ribbons between discrete ran
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/sondresk/ggbumpribbon}
-  \item Report bugs at \url{https://github.com/sondresk/ggbumpribbon/issues}
+  \item \url{https://github.com/sondreskarsten/ggbumpribbon}
+  \item Report bugs at \url{https://github.com/sondreskarsten/ggbumpribbon/issues}
 }
 
 }
