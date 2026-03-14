@@ -2,7 +2,7 @@
 #'
 #' `geom_bump_ribbon()` renders filled ribbons that follow sigmoid curves
 #' between discrete rank positions. It is the filled-area counterpart to
-#' [ggbump's][https://github.com/davidsjoberg/ggbump] `geom_bump()`.
+#' ggbump's `geom_bump()` (<https://github.com/davidsjoberg/ggbump>).
 #'
 #' @section Aesthetics:
 #' `geom_bump_ribbon()` understands the following aesthetics
