@@ -6,6 +6,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/sondreskarsten/ggbumpribbon/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sondreskarsten/ggbumpribbon/actions/workflows/R-CMD-check.yaml)
+[![r-universe](https://sondreskarsten.r-universe.dev/badges/ggbumpribbon)](https://sondreskarsten.r-universe.dev/ggbumpribbon)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
@@ -261,6 +262,13 @@ ggplot() +
 </details>
 
 ## Installation
+
+``` r
+install.packages("ggbumpribbon",
+  repos = c("https://sondreskarsten.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+Or from GitHub:
 
 ``` r
 # install.packages("pak")
