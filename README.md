@@ -355,43 +355,196 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 ## Gallery
 
+### 1. The Grammy Bump — `geom_bump_line()` slope chart
+
+<img src="man/figures/showcase-grammy.png" width="65%" />
+
 <details>
-<summary>Click to expand — 10 domains + parameter examples</summary>
+<summary>Code</summary>
 
-### Real-world domains
+```r
+library(ggplot2)
+library(ggbumpribbon)
 
-**1. Car Colors — Consumer** | **2. GDP — Economics** | **3. Languages — Tech**
-:---:|:---:|:---:
-<img src="man/figures/ex-car-colors.png" width="100%" /> | <img src="man/figures/ex-gdp.png" width="100%" /> | <img src="man/figures/ex-languages.png" width="100%" />
-`geom_bump_line()` + `scale_colour_manual()` with actual car colors | 3-bend channel + `theme_bump(bg = "#0b1a38")` | `geom_bump_line()` + `geom_point()` + `scale_colour_brewer()`
+grammy <- data.frame(stringsAsFactors = FALSE,
+  group     = c("Adele","Taylor Swift","Billie Eilish","Beyoncé",
+                "Daft Punk","Bruno Mars","Mumford & Sons","Beck"),
+  rank_from = c(5, 3, 7, 2, 8, 4, 6, 1),
+  rank_to   = c(1, 2, 3, 5, 6, 4, 8, 7))
 
-**4. Causes of Death — Health** | **5. Grammy Bump — Music** | **6. Social Media — Internet**
-:---:|:---:|:---:
-<img src="man/figures/ex-health.png" width="100%" /> | <img src="man/figures/ex-grammy.png" width="100%" /> | <img src="man/figures/ex-social-media.png" width="100%" />
-`geom_bump_ribbon()` multi-period | Slope chart + gold/black custom theme | `geom_bump_line()` with platform brand colors
+df <- data.frame(
+  x = rep(1:2, each = 8), y = c(grammy$rank_from, grammy$rank_to),
+  group = rep(grammy$group, 2))
+lbl_l <- df[df$x == 1, ]; lbl_r <- df[df$x == 2, ]
 
-**7. Street Food — Travel** | **8. Innovation Index — Governance** | **9. UK Election — Politics**
-:---:|:---:|:---:
-<img src="man/figures/ex-street-food.png" width="100%" /> | <img src="man/figures/ex-innovation.png" width="100%" /> | <img src="man/figures/ex-uk-election.png" width="100%" />
-`geom_bump_ribbon()` on warm `#fef3c7` background | `geom_bump_ribbon()` + `scale_fill_viridis_c()` | `geom_bump_line()` + `geom_point()` with party colours
+ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
+  geom_bump_line(linewidth = 1.5, smooth = 6) +
+  geom_point(aes(x, y), data = df, inherit.aes = FALSE, size = 3, colour = "white") +
+  scale_colour_gradientn(colours = c("#fbbf24","#f97316","#ec4899","#8b5cf6"), guide = "none") +
+  scale_y_reverse(breaks = 1:8) +
+  scale_x_continuous(limits = c(0.2, 2.8), breaks = 1:2,
+                     labels = c("Pre-Grammy\nSales Rank", "Post-Grammy\nSales Rank")) +
+  geom_text(data = lbl_l, aes(x = 0.94, y = y, label = y), inherit.aes = FALSE,
+            hjust = 1, colour = "grey90", size = 2.5) +
+  geom_text(data = lbl_l, aes(x = 0.88, y = y, label = group), inherit.aes = FALSE,
+            hjust = 1, colour = "grey90", size = 2.8) +
+  geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y), inherit.aes = FALSE,
+            hjust = 0, colour = "grey90", size = 2.5) +
+  geom_text(data = lbl_r, aes(x = 2.12, y = y, label = group), inherit.aes = FALSE,
+            hjust = 0, colour = "grey90", size = 2.8) +
+  labs(title = "THE GRAMMY BUMP",
+       subtitle = "Album sales rank shift after winning Album of the Year") +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "#111111", colour = NA),
+        panel.background = element_rect(fill = "#111111", colour = NA),
+        axis.text.x = element_text(colour = "#fbbf24", size = 10, face = "bold"),
+        plot.title = element_text(colour = "#fbbf24", size = 18, face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(colour = "grey60", size = 9, hjust = 0.5))
+```
 
-**10. Quality of Life — Demographics** | |
-:---:|:---:|:---:
-<img src="man/figures/ex-quality-of-life.png" width="70%" /> | |
+</details>
 
-### Parameter variations
+### 2. Programming Languages — `geom_bump_line()` multi-period
 
-**Smooth comparison** (`smooth = 2, 5, 8, 15`)
+<img src="man/figures/showcase-languages.png" width="75%" />
 
-<img src="man/figures/ex-smooth-comparison.png" width="90%" />
+<details>
+<summary>Code</summary>
 
-**Narrow (`width = 0.3`)** | **Wide (`width = 1.5`)** | **Ribbon + line overlay**
-:---:|:---:|:---:
-<img src="man/figures/ex-ribbon-narrow.png" width="100%" /> | <img src="man/figures/ex-ribbon-wide.png" width="100%" /> | <img src="man/figures/ex-ribbon-line-overlay.png" width="100%" />
+```r
+library(ggplot2)
+library(ggbumpribbon)
 
-**Discrete fill** | **Light theme** | **30 items**
-:---:|:---:|:---:
-<img src="man/figures/ex-discrete-fill.png" width="100%" /> | <img src="man/figures/ex-light-theme.png" width="100%" /> | <img src="man/figures/ex-large-n.png" width="50%" />
+langs <- c("Python","JavaScript","Java","TypeScript","Go","C++","Rust","PHP")
+df <- data.frame(stringsAsFactors = FALSE,
+  group = rep(langs, 5),
+  x = rep(c(2016, 2018, 2020, 2022, 2024), each = 8),
+  y = c(3,1,2,8,5,4,7,6, 2,1,3,6,4,5,7,8, 1,2,3,5,4,6,7,8,
+        1,2,3,4,5,6,7,8, 1,3,4,2,5,6,7,8))
+lbl_l <- df[df$x == 2016, ]; lbl_r <- df[df$x == 2024, ]
+
+ggplot(df, aes(x, y, group = group, colour = group)) +
+  geom_bump_line(linewidth = 1, smooth = 5) +
+  geom_point(data = df[df$x %in% c(2016, 2024), ],
+             aes(x, y, colour = group), inherit.aes = FALSE, size = 2.5) +
+  scale_colour_manual(values = c(Python="#3776AB",JavaScript="#F7DF1E",Java="#ED8B00",
+                                 TypeScript="#3178C6",Go="#00ADD8",`C++`="#00599C",
+                                 Rust="#CE422B",PHP="#777BB4"), guide = "none") +
+  scale_y_reverse(breaks = 1:8) +
+  scale_x_continuous(limits = c(2013, 2027), breaks = c(2016,2018,2020,2022,2024)) +
+  geom_text(data = lbl_l, aes(x = 2015.7, y = y, label = group),
+            inherit.aes = FALSE, hjust = 1, size = 2.8, colour = "grey20") +
+  geom_text(data = lbl_r, aes(x = 2024.3, y = y, label = group),
+            inherit.aes = FALSE, hjust = 0, size = 2.8, colour = "grey20") +
+  labs(title = "Programming Language Popularity on GitHub",
+       subtitle = "Simulated rank by pull requests 2016–2024", x = NULL, y = "Rank") +
+  theme_light(base_size = 10) +
+  theme(panel.grid.minor = element_blank(), plot.title = element_text(face = "bold"))
+```
+
+</details>
+
+### 3. Leading Causes of Death — `geom_bump_ribbon()` multi-period
+
+<img src="man/figures/showcase-health.png" width="75%" />
+
+<details>
+<summary>Code</summary>
+
+```r
+library(ggplot2)
+library(ggbumpribbon)
+
+causes <- c("Heart Disease","Cancer","Accidents","Stroke",
+            "Diabetes","Alzheimer's","Influenza","Kidney Disease")
+df <- data.frame(stringsAsFactors = FALSE,
+  group = rep(causes, 5),
+  x = rep(c(2000, 2005, 2010, 2015, 2020), each = 8),
+  y = c(1,2,5,3,6,7,4,8, 1,2,4,3,6,5,7,8, 1,2,3,4,7,5,6,8,
+        1,2,3,5,7,4,6,8, 1,2,3,5,8,4,6,7))
+lbl_l <- df[df$x == 2000, ]; lbl_r <- df[df$x == 2020, ]
+
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.75, width = 0.65, smooth = 5) +
+  scale_fill_gradientn(colours = c("#991b1b","#dc2626","#f59e0b","#84cc16","#0ea5e9","#6366f1"),
+                       guide = "none") +
+  scale_y_reverse(breaks = 1:8) +
+  scale_x_continuous(limits = c(1995.5, 2024.5), breaks = c(2000,2005,2010,2015,2020)) +
+  geom_text(data = lbl_l, aes(x = 1999.5, y = y, label = group),
+            inherit.aes = FALSE, hjust = 1, size = 2.5, colour = "grey30") +
+  geom_text(data = lbl_l, aes(x = 1999.8, y = y, label = y),
+            inherit.aes = FALSE, hjust = 1, size = 2.2, colour = "grey50") +
+  geom_text(data = lbl_r, aes(x = 2020.5, y = y, label = group),
+            inherit.aes = FALSE, hjust = 0, size = 2.5, colour = "grey30") +
+  geom_text(data = lbl_r, aes(x = 2020.2, y = y, label = y),
+            inherit.aes = FALSE, hjust = 0, size = 2.2, colour = "grey50") +
+  labs(title = "Leading Causes of Death in the U.S.",
+       subtitle = "Simulated rank changes 2000–2020", x = NULL, y = "Rank") +
+  theme_minimal(base_size = 10) +
+  theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(),
+        plot.title = element_text(face = "bold"))
+```
+
+</details>
+
+### 4. Quality of Life — `geom_bump_ribbon()` slope with entries/exits
+
+<img src="man/figures/showcase-quality.png" width="55%" />
+
+<details>
+<summary>Code</summary>
+
+```r
+library(ggplot2)
+library(ggbumpribbon)
+
+both <- data.frame(stringsAsFactors = FALSE,
+  group     = c("Netherlands","Denmark","Switzerland","Norway","Finland",
+                "Germany","Austria","Australia"),
+  rank_from = c(12, 1, 2, 5, 6, 7, 4, 8),
+  rank_to   = c(1, 2, 3, 5, 6, 7, 8, 10))
+exit_only  <- data.frame(group = c("Sweden","Canada"), rank_from = c(3, 9))
+enter_only <- data.frame(group = c("New Zealand","Japan"), rank_to = c(4, 9))
+
+df <- data.frame(
+  x = rep(1:2, each = nrow(both)), y = c(both$rank_from, both$rank_to),
+  group = rep(both$group, 2))
+lbl_l <- df[df$x == 1, ]; lbl_r <- df[df$x == 2, ]
+
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.8, width = 0.55) +
+  scale_fill_gradientn(colours = c("#059669","#34d399","#fbbf24","#f97316","#dc2626"),
+                       guide = "none") +
+  scale_y_reverse(breaks = 1:12) +
+  scale_x_continuous(limits = c(0.1, 2.9), breaks = 1:2, labels = c("2015","2025")) +
+  geom_text(data = lbl_l, aes(x = 0.94, y = y, label = y),
+            inherit.aes = FALSE, hjust = 1, colour = "grey30", size = 3) +
+  geom_text(data = lbl_l, aes(x = 0.88, y = y, label = group),
+            inherit.aes = FALSE, hjust = 1, colour = "grey20", size = 3.2, fontface = "bold") +
+  geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y),
+            inherit.aes = FALSE, hjust = 0, colour = "grey30", size = 3) +
+  geom_text(data = lbl_r, aes(x = 2.12, y = y, label = group),
+            inherit.aes = FALSE, hjust = 0, colour = "grey20", size = 3.2, fontface = "bold") +
+  # exit only (grey left)
+  geom_text(data = exit_only, aes(x = 0.94, y = rank_from, label = rank_from),
+            inherit.aes = FALSE, hjust = 1, colour = "grey65", size = 3) +
+  geom_text(data = exit_only, aes(x = 0.88, y = rank_from, label = group),
+            inherit.aes = FALSE, hjust = 1, colour = "grey65", size = 3.2) +
+  # enter only (grey right)
+  geom_text(data = enter_only, aes(x = 2.06, y = rank_to, label = rank_to),
+            inherit.aes = FALSE, hjust = 0, colour = "grey65", size = 3) +
+  geom_text(data = enter_only, aes(x = 2.12, y = rank_to, label = group),
+            inherit.aes = FALSE, hjust = 0, colour = "grey65", size = 3.2) +
+  annotate("text", x = 1, y = -0.5, label = "2015", colour = "grey30", size = 5.5, fontface = "bold") +
+  annotate("text", x = 2, y = -0.5, label = "2025", colour = "grey30", size = 5.5, fontface = "bold") +
+  labs(title = "Top Countries by Quality of Life",
+       subtitle = "Netherlands climbs 11 places",
+       caption = "Grey = entered/exited top 10") +
+  theme_void() +
+  theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+        plot.subtitle = element_text(colour = "grey50", size = 9, hjust = 0.5),
+        plot.caption = element_text(colour = "grey60", size = 7, hjust = 1))
+```
 
 </details>
 
