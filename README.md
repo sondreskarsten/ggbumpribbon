@@ -111,8 +111,6 @@ Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
 
 </details>
 
-### `geom_bump_line()` — Top 20 Economies 1980 vs 2025
-
 <img src="man/figures/README-gdp-1.png" alt="" width="100%" />
 
 <details>
@@ -262,15 +260,6 @@ ggplot() +
 
 </details>
 
-## The gap
-
-| Package          | What it does                                       | What it lacks                                           |
-|------------------|----------------------------------------------------|---------------------------------------------------------|
-| **ggbump**       | Sigmoid *lines* via `geom_bump()`                  | No filled ribbons                                       |
-| **ggforce**      | Bezier *ribbons* via `geom_diagonal_wide()`        | Bezier, not sigmoid curve shape                         |
-| **ggsankey**     | Sankey-style ribbon bumps                          | *Stacked* positioning, not rank-positioned. GitHub-only |
-| **ggbumpribbon** | **Sigmoid filled ribbons at exact rank positions** | —                                                       |
-
 ## Installation
 
 ``` r
@@ -278,7 +267,9 @@ ggplot() +
 pak::pak("sondreskarsten/ggbumpribbon")
 ```
 
-## Minimal example
+## Usage
+
+### Minimal example
 
 ``` r
 library(ggplot2)
@@ -306,34 +297,7 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 <img src="man/figures/README-basic-1.png" alt="" width="100%" />
 
-## Multi-period
-
-Ribbons chain automatically across 3+ time points:
-
-``` r
-df3 <- data.frame(
-  x     = rep(1:3, each = 4),
-  y     = c(1,2,3,4, 3,1,4,2, 2,4,1,3),
-  group = rep(LETTERS[1:4], 3)
-)
-
-lbl_l <- df3[df3$x == 1, ]; lbl_r <- df3[df3$x == 3, ]
-
-ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
-  geom_bump_ribbon(alpha = 0.7) +
-  scale_fill_viridis_c(guide = "none") +
-  scale_y_reverse() +
-  scale_x_continuous(limits = c(0.3, 3.7)) +
-  geom_text(data = lbl_l, aes(x = 0.92, y = y, label = paste(y, group)),
-            inherit.aes = FALSE, hjust = 1, size = 4) +
-  geom_text(data = lbl_r, aes(x = 3.08, y = y, label = paste(group, y)),
-            inherit.aes = FALSE, hjust = 0, size = 4) +
-  theme_void()
-```
-
-<img src="man/figures/README-multiperiod-1.png" alt="" width="100%" />
-
-## `geom_bump_line()`
+### Lines
 
 The line counterpart to `geom_bump_ribbon()`. Uses sigmoid curves
 between rank positions but renders as stroked paths via `GeomPath`
@@ -341,6 +305,9 @@ instead of filled areas. Map `colour = after_stat(avg_y)` instead of
 `fill`.
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 df <- data.frame(
   x     = rep(1:2, each = 5),
   y     = c(1, 2, 3, 4, 5, 3, 1, 5, 2, 4),
@@ -363,7 +330,37 @@ ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
 
 <img src="man/figures/README-bumpline-1.png" alt="" width="100%" />
 
-## Multi-bend curves
+### Multi-period
+
+Ribbons and lines chain automatically across 3+ time points:
+
+``` r
+library(ggplot2)
+library(ggbumpribbon)
+
+df3 <- data.frame(
+  x     = rep(1:3, each = 4),
+  y     = c(1,2,3,4, 3,1,4,2, 2,4,1,3),
+  group = rep(LETTERS[1:4], 3)
+)
+
+lbl_l <- df3[df3$x == 1, ]; lbl_r <- df3[df3$x == 3, ]
+
+ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.7) +
+  scale_fill_viridis_c(guide = "none") +
+  scale_y_reverse() +
+  scale_x_continuous(limits = c(0.3, 3.7)) +
+  geom_text(data = lbl_l, aes(x = 0.92, y = y, label = paste(y, group)),
+            inherit.aes = FALSE, hjust = 1, size = 4) +
+  geom_text(data = lbl_r, aes(x = 3.08, y = y, label = paste(group, y)),
+            inherit.aes = FALSE, hjust = 0, size = 4) +
+  theme_void()
+```
+
+<img src="man/figures/README-multiperiod-1.png" alt="" width="100%" />
+
+### Multi-bend curves
 
 The number of bends is controlled entirely by the data shape, not by
 parameters. Two x-values per group produce one sigmoid. Four x-values —
@@ -378,9 +375,12 @@ produce the “exit-channel-enter” pattern seen in the GDP hero above:
 Adjusting the gap between the middle x-values (`1.3`/`1.7` vs
 `1.45`/`1.55`) controls how narrow the central channel is.
 
-## mtcars
+### Real data (mtcars)
 
 ``` r
+library(ggplot2)
+library(ggbumpribbon)
+
 mt <- mtcars[1:10, ]
 mt$car <- rownames(mt)
 
@@ -587,7 +587,9 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 <img src="man/figures/README-quality-1.png" alt="" width="100%" />
 
-## Parameters
+## Reference
+
+### Parameters
 
 | Parameter | Default | Description                                                 |
 |-----------|---------|-------------------------------------------------------------|
@@ -596,7 +598,7 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `n`       | `100`   | Interpolation points per segment                            |
 | `alpha`   | `0.85`  | Ribbon transparency                                         |
 
-## Computed variables
+### Computed variables
 
 | Variable | Description                                                                                                |
 |----------|------------------------------------------------------------------------------------------------------------|
@@ -604,7 +606,7 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `ymin`   | Lower ribbon boundary (`geom_bump_ribbon()` only)                                                          |
 | `ymax`   | Upper ribbon boundary (`geom_bump_ribbon()` only)                                                          |
 
-## Functions
+### Functions
 
 | Function             | Description                                                             |
 |----------------------|-------------------------------------------------------------------------|
@@ -613,7 +615,7 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `scale_fill_rank()`  | Green-yellow-red gradient scale with `guide = "none"` default           |
 | `theme_bump()`       | Dark background theme for rank comparison infographics                  |
 
-## Architecture
+### Architecture
 
     geom_bump_ribbon():
       User data (x, y, group)
@@ -630,6 +632,15 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
         → GeomPath renders stroked path
 
     Both Stats share sigmoid_path() and the avg_y inverse-transform fix.
+
+## Comparison
+
+| Package          | What it does                                                 | What it lacks                                           |
+|------------------|--------------------------------------------------------------|---------------------------------------------------------|
+| **ggbump**       | Sigmoid *lines* via `geom_bump()`                            | No filled ribbons                                       |
+| **ggforce**      | Bezier *ribbons* via `geom_diagonal_wide()`                  | Bezier, not sigmoid curve shape                         |
+| **ggsankey**     | Sankey-style ribbon bumps                                    | *Stacked* positioning, not rank-positioned. GitHub-only |
+| **ggbumpribbon** | **Sigmoid filled ribbons and lines at exact rank positions** | —                                                       |
 
 ## Dependencies
 
