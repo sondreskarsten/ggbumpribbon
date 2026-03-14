@@ -112,6 +112,102 @@ Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
 
 </details>
 
+### `geom_bump_line()` — Top 20 Economies 1980 vs 2025
+
+<a href="https://raw.githubusercontent.com/sondreskarsten/ggbumpribbon/main/man/figures/README-gdp.png"><img src="man/figures/README-gdp.png" width="55%" /></a>
+
+<details>
+<summary>Code to reproduce</summary>
+
+```r
+library(ggplot2)
+library(ggbumpribbon)
+library(ggflags)
+library(countrycode)
+
+# countries in both top-20 lists get lines
+both <- data.frame(stringsAsFactors = FALSE,
+  country   = c("U.S.","Japan","Germany","France","UK","Italy","China","Canada",
+                "Mexico","Spain","Netherlands","India","Saudi Arabia","Australia","Brazil"),
+  rank_from = c(1,2,3,4,5,6,7,8,9,11,12,13,14,15,16),
+  rank_to   = c(1,4,3,7,6,8,2,10,13,12,18,5,19,15,11)
+)
+
+exit_only <- data.frame(stringsAsFactors = FALSE,
+  country   = c("Argentina","Sweden","Belgium","Switzerland","Iran"),
+  rank_from = c(10, 17, 18, 19, 20))
+
+enter_only <- data.frame(stringsAsFactors = FALSE,
+  country   = c("Russia","S. Korea","Türkiye","Indonesia","Poland"),
+  rank_to   = c(9, 14, 16, 17, 20))
+
+ov <- c("U.S."="us","UK"="gb","S. Korea"="kr","Türkiye"="tr","UAE"="ae")
+iso <- function(x) ifelse(x %in% names(ov), ov[x],
+  tolower(countrycode(x, "country.name", "iso2c", warn = FALSE)))
+
+both$iso2       <- iso(both$country)
+exit_only$iso2  <- iso(exit_only$country)
+enter_only$iso2 <- iso(enter_only$country)
+
+# 4 x-values per group → 3-bend "exit–channel–enter" pattern
+both_long <- data.frame(
+  x       = rep(c(1, 1.35, 1.65, 2), each = nrow(both)),
+  y       = c(both$rank_from, both$rank_from, both$rank_to, both$rank_to),
+  group   = rep(both$country, 4),
+  country = rep(both$country, 4),
+  iso2    = rep(both$iso2, 4)
+)
+
+lbl_l <- both_long[both_long$x == 1, ]
+lbl_r <- both_long[both_long$x == 2, ]
+
+ggplot(both_long, aes(x, y, group = group, colour = after_stat(avg_y))) +
+  geom_bump_line(linewidth = 0.8, smooth = 10) +
+  scale_colour_viridis_c(option = "C", direction = -1, guide = "none") +
+  scale_y_reverse(expand = expansion(mult = c(0.03, 0.03))) +
+  scale_x_continuous(limits = c(0.15, 2.85)) +
+  # left labels
+  geom_text(data = lbl_l, aes(x = 0.94, y = y, label = y),
+            inherit.aes = FALSE, hjust = 1, colour = "white", size = 2.8) +
+  geom_flag(data = lbl_l, aes(x = 0.88, y = y, country = iso2),
+            inherit.aes = FALSE, size = 3.5) +
+  geom_text(data = lbl_l, aes(x = 0.82, y = y, label = country),
+            inherit.aes = FALSE, hjust = 1, colour = "white", size = 2.8) +
+  # right labels
+  geom_text(data = lbl_r, aes(x = 2.06, y = y, label = y),
+            inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8) +
+  geom_flag(data = lbl_r, aes(x = 2.12, y = y, country = iso2),
+            inherit.aes = FALSE, size = 3.5) +
+  geom_text(data = lbl_r, aes(x = 2.18, y = y, label = country),
+            inherit.aes = FALSE, hjust = 0, colour = "white", size = 2.8) +
+  # exit only (grey left)
+  geom_text(data = exit_only, aes(x = 0.94, y = rank_from, label = rank_from),
+            inherit.aes = FALSE, hjust = 1, colour = "grey55", size = 2.8) +
+  geom_flag(data = exit_only, aes(x = 0.88, y = rank_from, country = iso2),
+            inherit.aes = FALSE, size = 3.5) +
+  geom_text(data = exit_only, aes(x = 0.82, y = rank_from, label = country),
+            inherit.aes = FALSE, hjust = 1, colour = "grey55", size = 2.8) +
+  # enter only (grey right)
+  geom_text(data = enter_only, aes(x = 2.06, y = rank_to, label = rank_to),
+            inherit.aes = FALSE, hjust = 0, colour = "grey55", size = 2.8) +
+  geom_flag(data = enter_only, aes(x = 2.12, y = rank_to, country = iso2),
+            inherit.aes = FALSE, size = 3.5) +
+  geom_text(data = enter_only, aes(x = 2.18, y = rank_to, label = country),
+            inherit.aes = FALSE, hjust = 0, colour = "grey55", size = 2.8) +
+  annotate("text", x = 1, y = -0.5, label = "1980",
+           colour = "white", size = 5, fontface = "bold") +
+  annotate("text", x = 2, y = -0.5, label = "2025",
+           colour = "white", size = 5, fontface = "bold") +
+  labs(
+    title    = "TOP 20 ECONOMIES",
+    subtitle = "GDP by country — 1980 vs 2025",
+    caption  = "Source: IMF, World Economic Outlook | Made with ggbumpribbon"
+  ) +
+  theme_bump(bg = "#0d1b3e")
+```
+
+</details>
+
 ## The gap
 
 | Package | What it does | What it lacks |
