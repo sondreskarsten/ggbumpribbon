@@ -599,11 +599,21 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 ## Architecture
 
 ```
-User data (x, y, group)
-  → StatBumpRibbon$compute_group() / StatBumpLine$compute_group()
-    → sigmoid_path() for upper/lower edges (ribbon) or centerline (line)
-    → returns data.frame(x, y, ymin, ymax, avg_y)
-  → GeomRibbon / GeomPath renders
+geom_bump_ribbon():
+  User data (x, y, group)
+    → StatBumpRibbon$compute_group()
+      → sigmoid_path() for upper + lower edges at y ± width/2
+      → returns data.frame(x, y, ymin, ymax, avg_y)
+    → GeomRibbon renders filled area
+
+geom_bump_line():
+  User data (x, y, group)
+    → StatBumpLine$compute_group()
+      → sigmoid_path() for centerline at y
+      → returns data.frame(x, y, avg_y)
+    → GeomPath renders stroked path
+
+Both Stats share sigmoid_path() and the avg_y inverse-transform fix.
 ```
 
 ## Dependencies
