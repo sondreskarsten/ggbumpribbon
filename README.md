@@ -353,6 +353,39 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 <img src="man/figures/README-mtcars.png" width="60%" />
 
+## Gallery
+
+<details>
+<summary>Click to expand all examples</summary>
+
+### Lines
+
+**Basic** | **3-period** | **3-bend channel**
+:---:|:---:|:---:
+<img src="man/figures/ex-line-basic.png" width="100%" /> | <img src="man/figures/ex-line-multiperiod.png" width="100%" /> | <img src="man/figures/ex-line-3bend.png" width="100%" />
+
+### Ribbons
+
+**Basic** | **Narrow (`width = 0.3`)** | **Wide (`width = 1.5`)**
+:---:|:---:|:---:
+<img src="man/figures/ex-ribbon-basic.png" width="100%" /> | <img src="man/figures/ex-ribbon-narrow.png" width="100%" /> | <img src="man/figures/ex-ribbon-wide.png" width="100%" />
+
+**3-period** | **Discrete fill** | **Ribbon + line overlay**
+:---:|:---:|:---:
+<img src="man/figures/ex-ribbon-multiperiod.png" width="100%" /> | <img src="man/figures/ex-discrete-fill.png" width="100%" /> | <img src="man/figures/ex-ribbon-line-overlay.png" width="100%" />
+
+### Smooth parameter
+
+<img src="man/figures/ex-smooth-comparison.png" width="90%" />
+
+### Themes
+
+**Light** | **Dark** | **30 items**
+:---:|:---:|:---:
+<img src="man/figures/ex-light-theme.png" width="100%" /> | <img src="man/figures/ex-mtcars.png" width="100%" /> | <img src="man/figures/ex-large-n.png" width="50%" />
+
+</details>
+
 ## Parameters
 
 | Parameter | Default | Description |
