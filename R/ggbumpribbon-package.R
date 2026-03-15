@@ -13,6 +13,6 @@
 #' @rdname ggbumpribbon-ggproto
 NULL
 
-#' @importFrom rlang .data
+#' @importFrom cli cli_abort
 #' @importFrom ggplot2 ggproto Stat aes %+replace%
 NULL

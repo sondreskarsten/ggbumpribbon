@@ -1,6 +1,6 @@
 Package: ggbumpribbon
 Title: Sigmoid-Curved Ribbons for Rank Comparison Charts
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person("Sondre", "Skarsten", email = "sondreskarsten@gmail.com",
            role = c("aut", "cre"))
@@ -16,6 +16,7 @@ BugReports: https://github.com/sondreskarsten/ggbumpribbon/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    cli,
     ggplot2 (>= 3.5.0),
     rlang (>= 1.0.0),
     scales
