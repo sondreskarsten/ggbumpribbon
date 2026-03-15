@@ -2,7 +2,7 @@
 % Please edit documentation in R/theme-bump.R
 \name{theme_bump}
 \alias{theme_bump}
-\title{Dark theme for bump ribbon charts}
+\title{Dark theme for bump charts}
 \usage{
 theme_bump(bg = "#1a1a2e", title_color = "#e74c3c", base_size = 10)
 }
@@ -27,3 +27,10 @@ ggplot(mtcars, aes(wt, mpg)) +
   labs(title = "Motor Trend Cars") +
   theme_bump()
 }
+\seealso{
+\code{\link[ggplot2:ggtheme]{ggplot2::theme_void()}}, \code{\link[=geom_bump_ribbon]{geom_bump_ribbon()}}
+
+Other bump scales: 
+\code{\link{scale_fill_rank}()}
+}
+\concept{bump scales}

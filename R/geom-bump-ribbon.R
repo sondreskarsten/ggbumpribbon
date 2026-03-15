@@ -21,8 +21,9 @@
 #' \describe{
 #'   \item{`ymin`}{Lower ribbon boundary.}
 #'   \item{`ymax`}{Upper ribbon boundary.}
-#'   \item{`avg_y`}{Mean of all y values in the group; useful for
-#'     rank-based fill via `after_stat(avg_y)`.}
+#'   \item{`avg_y`}{Mean of y values in the group, inverse-transformed to
+#'     original data space. Works correctly with `scale_y_reverse()` and
+#'     other scale transforms. Map to fill via `after_stat(avg_y)`.}
 #' }
 #'
 #' @section Interpolation methods:
@@ -65,6 +66,8 @@
 #'   [stats::splinefunH()]. See section **Interpolation methods**.
 #'
 #' @returns A [ggplot2 layer][ggplot2::layer()] that can be added to a plot.
+#' @family bump geoms
+#' @seealso [geom_bump_line()], [ggplot2::geom_ribbon()]
 #' @export
 #'
 #' @examples
@@ -142,7 +145,7 @@ geom_bump_ribbon <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_bump_ribbon
+#' @rdname ggbumpribbon-ggproto
 #' @format NULL
 #' @usage NULL
 #' @export
@@ -167,8 +170,13 @@ StatBumpRibbon <- ggproto("StatBumpRibbon", Stat,
     if (nrow(data) < 2) return(data.frame())
 
     width <- abs(width)
-    hw    <- width / 2
-    avg_y <- mean(data$y)
+    hw      <- width / 2
+    mean_y  <- mean(data$y)
+    avg_y   <- if (!is.null(scales$y) && !is.null(scales$y$trans)) {
+      scales$y$trans$inverse(mean_y)
+    } else {
+      mean_y
+    }
 
     upper <- smooth_path(data$x, data$y - hw, smooth = smooth, n = n,
                          method = method)

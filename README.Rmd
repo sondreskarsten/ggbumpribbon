@@ -1,29 +1,30 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  dpi = 150
+)
+```
 
 # ggbumpribbon
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/sondreskarsten/ggbumpribbon/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sondreskarsten/ggbumpribbon/actions/workflows/R-CMD-check.yaml)
 [![r-universe](https://sondreskarsten.r-universe.dev/badges/ggbumpribbon)](https://sondreskarsten.r-universe.dev/ggbumpribbon)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Sigmoid-curved filled ribbons and lines for rank comparison charts in
-ggplot2. Two geoms: `geom_bump_ribbon()` for filled areas and
-`geom_bump_line()` for stroked paths — both using the same logistic
-sigmoid interpolation.
+Sigmoid-curved filled ribbons and lines for rank comparison charts in ggplot2. Two geoms: `geom_bump_ribbon()` for filled areas and `geom_bump_line()` for stroked paths — both using the same logistic sigmoid interpolation.
 
-<img src="man/figures/README-reputation-1.png" alt="" width="100%" />
-
-<details>
-<summary>
-Code to reproduce (requires ggflags + countrycode)
-</summary>
-
-``` r
+```{r reputation, echo = FALSE, fig.width = 7, fig.height = 17, dpi = 200}
 library(ggplot2)
 library(ggbumpribbon)
 library(ggflags)
@@ -107,19 +108,18 @@ ggplot(ranks_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   theme_bump()
 ```
 
+<details>
+<summary>Code to reproduce (requires ggflags + countrycode)</summary>
+
+```{r ref.label = "reputation", eval = FALSE}
+```
+
 Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
 `install.packages("ggflags", repos = c("https://jimjam-slam.r-universe.dev", "https://cloud.r-project.org"))`
 
 </details>
 
-<img src="man/figures/README-gdp-1.png" alt="" width="100%" />
-
-<details>
-<summary>
-Code to reproduce (requires ggflags + countrycode)
-</summary>
-
-``` r
+```{r gdp, echo = FALSE, fig.width = 7, fig.height = 10, dpi = 200}
 library(ggplot2)
 library(ggbumpribbon)
 library(ggflags)
@@ -259,18 +259,24 @@ ggplot() +
         plot.margin      = margin(8, 8, 8, 8))
 ```
 
+<details>
+<summary>Code to reproduce (requires ggflags + countrycode)</summary>
+
+```{r ref.label = "gdp", eval = FALSE}
+```
+
 </details>
 
 ## Installation
 
-``` r
+```{r installation, eval = FALSE}
 install.packages("ggbumpribbon",
   repos = c("https://sondreskarsten.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
 Or from GitHub:
 
-``` r
+```{r installation2, eval = FALSE}
 # install.packages("pak")
 pak::pak("sondreskarsten/ggbumpribbon")
 ```
@@ -279,7 +285,7 @@ pak::pak("sondreskarsten/ggbumpribbon")
 
 ### Minimal example
 
-``` r
+```{r basic, fig.width = 6, fig.height = 4}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -303,16 +309,11 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
   theme_void()
 ```
 
-<img src="man/figures/README-basic-1.png" alt="" width="100%" />
-
 ### Lines
 
-The line counterpart to `geom_bump_ribbon()`. Uses sigmoid curves
-between rank positions but renders as stroked paths via `GeomPath`
-instead of filled areas. Map `colour = after_stat(avg_y)` instead of
-`fill`.
+The line counterpart to `geom_bump_ribbon()`. Uses sigmoid curves between rank positions but renders as stroked paths via `GeomPath` instead of filled areas. Map `colour = after_stat(avg_y)` instead of `fill`.
 
-``` r
+```{r bumpline, fig.width = 6, fig.height = 4}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -336,13 +337,11 @@ ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
   theme_void()
 ```
 
-<img src="man/figures/README-bumpline-1.png" alt="" width="100%" />
-
 ### Multi-period
 
 Ribbons and lines chain automatically across 3+ time points:
 
-``` r
+```{r multiperiod, fig.width = 6, fig.height = 4}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -366,26 +365,20 @@ ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
   theme_void()
 ```
 
-<img src="man/figures/README-multiperiod-1.png" alt="" width="100%" />
-
 ### Multi-bend curves
 
-The number of bends is controlled entirely by the data shape, not by
-parameters. Two x-values per group produce one sigmoid. Four x-values —
-with the middle two holding position at the departure and arrival y —
-produce the “exit-channel-enter” pattern seen in the GDP hero above:
+The number of bends is controlled entirely by the data shape, not by parameters. Two x-values per group produce one sigmoid. Four x-values — with the middle two holding position at the departure and arrival y — produce the "exit-channel-enter" pattern seen in the GDP hero above:
 
-``` r
+```r
 # 1 sigmoid:  x = c(1, 2)
 # 3 sigmoids: x = c(1, 1.35, 1.65, 2),  y = c(from, from, to, to)
 ```
 
-Adjusting the gap between the middle x-values (`1.3`/`1.7` vs
-`1.45`/`1.55`) controls how narrow the central channel is.
+Adjusting the gap between the middle x-values (`1.3`/`1.7` vs `1.45`/`1.55`) controls how narrow the central channel is.
 
 ### Real data (mtcars)
 
-``` r
+```{r mtcars, fig.width = 6, fig.height = 5}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -417,13 +410,11 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   theme_bump()
 ```
 
-<img src="man/figures/README-mtcars-1.png" alt="" width="100%" />
-
 ## Gallery
 
 ### 1. The Grammy Bump — slope chart
 
-``` r
+```{r grammy, fig.width = 7, fig.height = 6}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -464,11 +455,9 @@ ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
         plot.subtitle = element_text(colour = "grey60", size = 9, hjust = 0.5))
 ```
 
-<img src="man/figures/README-grammy-1.png" alt="" width="100%" />
-
 ### 2. Programming Languages — multi-period lines
 
-``` r
+```{r languages, fig.width = 8, fig.height = 5}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -499,11 +488,9 @@ ggplot(df, aes(x, y, group = group, colour = group)) +
   theme(panel.grid.minor = element_blank(), plot.title = element_text(face = "bold"))
 ```
 
-<img src="man/figures/README-languages-1.png" alt="" width="100%" />
-
 ### 3. Leading Causes of Death — multi-period ribbon
 
-``` r
+```{r health, fig.width = 9, fig.height = 5.5}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -537,11 +524,9 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
         plot.title = element_text(face = "bold"))
 ```
 
-<img src="man/figures/README-health-1.png" alt="" width="100%" />
-
 ### 4. Quality of Life — slope ribbon with entries/exits
 
-``` r
+```{r quality, fig.width = 6, fig.height = 7}
 library(ggplot2)
 library(ggbumpribbon)
 
@@ -593,67 +578,66 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
         plot.caption = element_text(colour = "grey60", size = 7, hjust = 1))
 ```
 
-<img src="man/figures/README-quality-1.png" alt="" width="100%" />
-
 ## Reference
 
 ### Parameters
 
-| Parameter | Default | Description                                                 |
-|-----------|---------|-------------------------------------------------------------|
-| `smooth`  | `8`     | Steepness of the sigmoid curve. Higher = sharper S-shape    |
-| `width`   | `0.8`   | Ribbon full width in data units (`geom_bump_ribbon()` only) |
-| `n`       | `100`   | Interpolation points per segment                            |
-| `alpha`   | `0.85`  | Ribbon transparency                                         |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `smooth` | `8` | Steepness of the sigmoid curve. Higher = sharper S-shape |
+| `width` | `0.8` | Ribbon full width in data units (`geom_bump_ribbon()` only) |
+| `n` | `100` | Interpolation points per segment |
+| `alpha` | `0.85` | Ribbon transparency |
 
 ### Computed variables
 
-| Variable | Description                                                                                                |
-|----------|------------------------------------------------------------------------------------------------------------|
-| `avg_y`  | Mean of y values in the group, inverse-transformed to original data space. Works with `scale_y_reverse()`. |
-| `ymin`   | Lower ribbon boundary (`geom_bump_ribbon()` only)                                                          |
-| `ymax`   | Upper ribbon boundary (`geom_bump_ribbon()` only)                                                          |
+| Variable | Description |
+|----------|-------------|
+| `avg_y` | Mean of y values in the group, inverse-transformed to original data space. Works with `scale_y_reverse()`. |
+| `ymin` | Lower ribbon boundary (`geom_bump_ribbon()` only) |
+| `ymax` | Upper ribbon boundary (`geom_bump_ribbon()` only) |
 
 ### Functions
 
-| Function             | Description                                                             |
-|----------------------|-------------------------------------------------------------------------|
+| Function | Description |
+|----------|-------------|
 | `geom_bump_ribbon()` | Sigmoid-curved filled ribbon between rank positions. Uses `GeomRibbon`. |
-| `geom_bump_line()`   | Sigmoid-curved line between rank positions. Uses `GeomPath`.            |
-| `scale_fill_rank()`  | Green-yellow-red gradient scale with `guide = "none"` default           |
-| `theme_bump()`       | Dark background theme for rank comparison infographics                  |
+| `geom_bump_line()` | Sigmoid-curved line between rank positions. Uses `GeomPath`. |
+| `scale_fill_rank()` | Green-yellow-red gradient scale with `guide = "none"` default |
+| `theme_bump()` | Dark background theme for rank comparison infographics |
 
 ### Architecture
 
-    geom_bump_ribbon():
-      User data (x, y, group)
-        → StatBumpRibbon$compute_group()
-          → sigmoid_path() for upper + lower edges at y ± width/2
-          → returns data.frame(x, y, ymin, ymax, avg_y)
-        → GeomRibbon renders filled area
+```
+geom_bump_ribbon():
+  User data (x, y, group)
+    → StatBumpRibbon$compute_group()
+      → sigmoid_path() for upper + lower edges at y ± width/2
+      → returns data.frame(x, y, ymin, ymax, avg_y)
+    → GeomRibbon renders filled area
 
-    geom_bump_line():
-      User data (x, y, group)
-        → StatBumpLine$compute_group()
-          → sigmoid_path() for centerline at y
-          → returns data.frame(x, y, avg_y)
-        → GeomPath renders stroked path
+geom_bump_line():
+  User data (x, y, group)
+    → StatBumpLine$compute_group()
+      → sigmoid_path() for centerline at y
+      → returns data.frame(x, y, avg_y)
+    → GeomPath renders stroked path
 
-    Both Stats share sigmoid_path() and the avg_y inverse-transform fix.
+Both Stats share sigmoid_path() and the avg_y inverse-transform fix.
+```
 
 ## Comparison
 
-| Package          | What it does                                                 | What it lacks                                           |
-|------------------|--------------------------------------------------------------|---------------------------------------------------------|
-| **ggbump**       | Sigmoid *lines* via `geom_bump()`                            | No filled ribbons                                       |
-| **ggforce**      | Bezier *ribbons* via `geom_diagonal_wide()`                  | Bezier, not sigmoid curve shape                         |
-| **ggsankey**     | Sankey-style ribbon bumps                                    | *Stacked* positioning, not rank-positioned. GitHub-only |
-| **ggbumpribbon** | **Sigmoid filled ribbons and lines at exact rank positions** | —                                                       |
+| Package | What it does | What it lacks |
+|---------|-------------|---------------|
+| **ggbump** | Sigmoid *lines* via `geom_bump()` | No filled ribbons |
+| **ggforce** | Bezier *ribbons* via `geom_diagonal_wide()` | Bezier, not sigmoid curve shape |
+| **ggsankey** | Sankey-style ribbon bumps | *Stacked* positioning, not rank-positioned. GitHub-only |
+| **ggbumpribbon** | **Sigmoid filled ribbons and lines at exact rank positions** | — |
 
 ## Dependencies
 
-**Hard:** ggplot2 (\>= 3.5.0), rlang, scales — rlang and scales are
-already ggplot2 dependencies.
+**Hard:** ggplot2 (>= 3.5.0), rlang, scales — rlang and scales are already ggplot2 dependencies.
 
 ## License
 
