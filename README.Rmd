@@ -10,7 +10,9 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures/README-",
   out.width = "100%",
-  dpi = 150
+  dev = "png",
+  dev.args = list(type = "cairo"),
+  dpi = 300
 )
 ```
 
@@ -24,7 +26,7 @@ knitr::opts_chunk$set(
 
 Sigmoid-curved filled ribbons and lines for rank comparison charts in ggplot2. Two geoms — `geom_bump_ribbon()` for filled areas and `geom_bump_line()` for stroked paths — with C1-continuous segment joins via logistic sigmoid or cubic Hermite interpolation.
 
-```{r reputation, echo = FALSE, fig.width = 7, fig.height = 17, dpi = 200}
+```{r reputation, echo = FALSE, fig.width = 7, fig.height = 17}
 library(ggplot2)
 library(ggbumpribbon)
 library(ggflags)
@@ -119,7 +121,7 @@ Flags require [ggflags](https://github.com/jimjam-slam/ggflags):
 
 </details>
 
-```{r gdp, echo = FALSE, fig.width = 7, fig.height = 10, dpi = 200}
+```{r gdp, echo = FALSE, fig.width = 7, fig.height = 10}
 library(ggplot2)
 library(ggbumpribbon)
 library(ggflags)
