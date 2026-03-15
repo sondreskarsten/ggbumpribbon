@@ -1,0 +1,171 @@
+---
+title: "Getting started with ggbumpribbon"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with ggbumpribbon}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4,
+  dpi = 96
+)
+```
+
+```{r setup}
+library(ggbumpribbon)
+library(ggplot2)
+```
+
+## Data format
+
+Both `geom_bump_ribbon()` and `geom_bump_line()` expect a long-format
+data frame with columns for position (`x`), rank (`y`), and a grouping
+variable. Each group must have at least two x-values.
+
+```{r data}
+df <- data.frame(
+  x     = rep(1:3, each = 4),
+  y     = c(1,2,3,4, 3,1,4,2, 2,4,1,3),
+  group = rep(LETTERS[1:4], 3)
+)
+df
+```
+
+## Filled ribbons
+
+`geom_bump_ribbon()` renders each group as a filled area with smooth
+sigmoid curves between rank positions. The `fill` aesthetic controls
+colour; mapping `after_stat(avg_y)` produces gradient fills based on
+mean rank.
+
+```{r ribbon}
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.85) +
+  scale_fill_viridis_c(guide = "none") +
+  scale_y_reverse() +
+  theme_void()
+```
+
+### Parameters
+
+The `smooth` parameter controls sigmoid steepness (higher = sharper),
+`width` sets the ribbon thickness in data units, and `n` controls
+interpolation density.
+
+```{r params-smooth3, fig.width = 6, fig.height = 3}
+p_base <- ggplot(df, aes(x, y, group = group, fill = group)) +
+  scale_fill_brewer(palette = "Set2", guide = "none") +
+  scale_y_reverse() + theme_void()
+
+p_base + geom_bump_ribbon(smooth = 3) + ggtitle("smooth = 3")
+```
+
+```{r params-smooth15, fig.width = 6, fig.height = 3}
+p_base + geom_bump_ribbon(smooth = 15) + ggtitle("smooth = 15")
+```
+
+```{r params-width, fig.width = 6, fig.height = 3}
+p_base + geom_bump_ribbon(width = 0.4) + ggtitle("width = 0.4")
+```
+
+## Lines
+
+`geom_bump_line()` renders the same sigmoid curves as stroked paths.
+Map `colour` instead of `fill`.
+
+```{r line}
+ggplot(df, aes(x, y, group = group, colour = after_stat(avg_y))) +
+  geom_bump_line(linewidth = 1.2) +
+  scale_colour_viridis_c(guide = "none") +
+  scale_y_reverse() +
+  theme_void()
+```
+
+## Interpolation methods
+
+Both geoms accept a `method` parameter. The default `"sigmoid"` uses
+logistic S-curves with C1-continuous derivative correction at segment
+joins. The alternative `"hermite"` uses cubic Hermite interpolation
+via `stats::splinefunH()` with zero slopes at knots.
+
+```{r method-sigmoid, fig.width = 6, fig.height = 3}
+ggplot(df, aes(x, y, group = group, fill = group)) +
+  geom_bump_ribbon(method = "sigmoid") +
+  scale_fill_brewer(palette = "Set2", guide = "none") +
+  scale_y_reverse() + ggtitle('method = "sigmoid"') + theme_void()
+```
+
+```{r method-hermite, fig.width = 6, fig.height = 3}
+ggplot(df, aes(x, y, group = group, fill = group)) +
+  geom_bump_ribbon(method = "hermite") +
+  scale_fill_brewer(palette = "Set2", guide = "none") +
+  scale_y_reverse() + ggtitle('method = "hermite"') + theme_void()
+```
+
+## Scale and theme
+
+`scale_fill_rank()` provides a green-yellow-red gradient with `guide =
+"none"`, defaulting to auto-range from the data. `theme_bump()` gives
+a dark background suited to rank comparison infographics.
+
+```{r scale-theme}
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon() +
+  scale_fill_rank() +
+  scale_y_reverse() +
+  theme_bump()
+```
+
+## Labels
+
+Add rank labels with standard ggplot2 layers. A typical pattern:
+
+```{r labels}
+lbl_l <- df[df$x == 1, ]
+lbl_r <- df[df$x == 3, ]
+
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(alpha = 0.85) +
+  scale_fill_viridis_c(guide = "none") +
+  scale_y_reverse() +
+  scale_x_continuous(limits = c(0.3, 3.7)) +
+  geom_text(data = lbl_l, aes(x = 0.92, y = y, label = paste(y, group)),
+            inherit.aes = FALSE, hjust = 1, size = 3.5) +
+  geom_text(data = lbl_r, aes(x = 3.08, y = y, label = paste(group, y)),
+            inherit.aes = FALSE, hjust = 0, size = 3.5) +
+  theme_void()
+```
+
+## Combining ribbons and lines
+
+Overlay `geom_bump_line()` on top of `geom_bump_ribbon()` for a
+bordered appearance:
+
+```{r combined}
+ggplot(df, aes(x, y, group = group)) +
+  geom_bump_ribbon(aes(fill = group), alpha = 0.6) +
+  geom_bump_line(aes(colour = group), linewidth = 0.8) +
+  scale_fill_brewer(palette = "Set2", guide = "none") +
+  scale_colour_brewer(palette = "Set2", guide = "none") +
+  scale_y_reverse() +
+  theme_void()
+```
+
+## Computed variables
+
+`StatBumpRibbon` computes `avg_y` (group mean rank, inverse-transformed
+for `scale_y_reverse()` compatibility), `ymin`, and `ymax`.
+`StatBumpLine` computes `avg_y` only.
+
+```{r computed}
+group_data <- data.frame(x = 1:3, y = c(1, 5, 2))
+out <- StatBumpRibbon$compute_group(group_data, NULL, smooth = 8,
+                                     n = 50, width = 0.8)
+head(out)
+```

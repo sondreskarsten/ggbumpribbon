@@ -10,3 +10,7 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
 ^NEWS\.md$
+^cran-comments\.md$
+^CRAN-RELEASE$
+^CRAN-SUBMISSION$
+^README\.html$

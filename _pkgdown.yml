@@ -1,0 +1,31 @@
+url: https://sondreskarsten.github.io/ggbumpribbon/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/sondreskarsten/ggbumpribbon
+
+reference:
+  - title: Geoms
+    contents:
+      - geom_bump_ribbon
+      - geom_bump_line
+  - title: Scales and themes
+    contents:
+      - scale_fill_rank
+      - theme_bump
+  - title: ggproto objects
+    contents:
+      - ggbumpribbon-ggproto
+
+articles:
+  - title: Getting started
+    contents:
+      - ggbumpribbon

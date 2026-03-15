@@ -6,7 +6,7 @@
 \alias{ggbumpribbon-package}
 \title{ggbumpribbon: Sigmoid-Curved Ribbons for Rank Comparison Charts}
 \description{
-A ggplot2 extension providing sigmoid-curved filled ribbons and lines between discrete rank positions. Offers geom_bump_ribbon() for filled areas and geom_bump_line() for stroked paths, both using logistic sigmoid interpolation. While ggbump provides sigmoid rank lines and ggforce provides bezier ribbons, no existing package renders sigmoid-curved filled areas positioned at exact rank coordinates.
+Provides 'ggplot2' geoms and stats for creating bump charts with sigmoid-curved filled ribbons and lines. Supports rank comparison visualizations where smooth S-shaped curves connect categorical positions across an ordered axis. Offers two interpolation methods (logistic sigmoid and cubic Hermite) with C1-continuous segment joins. Includes custom scales and themes optimized for bump chart readability.
 }
 \seealso{
 Useful links:
@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Sondre Skarsten \email{sondreskarsten@gmail.com}
+\strong{Maintainer}: Sondre Skarsten \email{sondreskarsten@gmail.com} [copyright holder]
 
 }
 \keyword{internal}
