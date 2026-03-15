@@ -12,9 +12,9 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <!-- badges: end -->
 
 Sigmoid-curved filled ribbons and lines for rank comparison charts in
-ggplot2. Two geoms: `geom_bump_ribbon()` for filled areas and
-`geom_bump_line()` for stroked paths — both using the same logistic
-sigmoid interpolation.
+ggplot2. Two geoms — `geom_bump_ribbon()` for filled areas and
+`geom_bump_line()` for stroked paths — with C1-continuous segment joins
+via logistic sigmoid or cubic Hermite interpolation.
 
 <img src="man/figures/README-reputation-1.png" alt="" width="100%" />
 
@@ -599,12 +599,12 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 ### Parameters
 
-| Parameter | Default | Description                                                 |
-|-----------|---------|-------------------------------------------------------------|
-| `smooth`  | `8`     | Steepness of the sigmoid curve. Higher = sharper S-shape    |
-| `width`   | `0.8`   | Ribbon full width in data units (`geom_bump_ribbon()` only) |
-| `n`       | `100`   | Interpolation points per segment                            |
-| `alpha`   | `0.85`  | Ribbon transparency                                         |
+| Parameter | Default     | Description                                                                                                                                            |
+|-----------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `method`  | `"sigmoid"` | Interpolation method: `"sigmoid"` (logistic S-curve with C1 correction) or `"hermite"` (cubic Hermite smoothstep). See **Interpolation methods** below |
+| `smooth`  | `8`         | Steepness of the sigmoid curve. Higher = sharper S-shape. Only used when `method = "sigmoid"`                                                          |
+| `width`   | `0.8`       | Ribbon full width in data units (`geom_bump_ribbon()` only)                                                                                            |
+| `n`       | `100`       | Interpolation points per segment (must be \>= 2)                                                                                                       |
 
 ### Computed variables
 
@@ -616,44 +616,65 @@ ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 ### Functions
 
-| Function             | Description                                                             |
-|----------------------|-------------------------------------------------------------------------|
-| `geom_bump_ribbon()` | Sigmoid-curved filled ribbon between rank positions. Uses `GeomRibbon`. |
-| `geom_bump_line()`   | Sigmoid-curved line between rank positions. Uses `GeomPath`.            |
-| `scale_fill_rank()`  | Green-yellow-red gradient scale with `guide = "none"` default           |
-| `theme_bump()`       | Dark background theme for rank comparison infographics                  |
+| Function             | Description                                                                                                                              |
+|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `geom_bump_ribbon()` | Smooth-curved filled ribbon between rank positions. Supports `method = "sigmoid"` (default) and `method = "hermite"`. Uses `GeomRibbon`. |
+| `geom_bump_line()`   | Smooth-curved line between rank positions. Same `method` parameter. Uses `GeomPath`.                                                     |
+| `scale_fill_rank()`  | Green-yellow-red gradient scale with `guide = "none"`. Defaults to auto-range from data; pass `limits = c(lo, hi)` for explicit control  |
+| `theme_bump()`       | Dark background theme for rank comparison infographics                                                                                   |
+
+### Interpolation methods
+
+When a group has 3+ time points, adjacent curved segments must be joined
+smoothly. Both geoms offer two methods via the `method` parameter, each
+guaranteeing C1 (first-derivative) continuity at every segment join:
+
+**`method = "sigmoid"`** (default) — each segment follows a logistic
+sigmoid σ(t) = 1/(1+e⁻ᵗ), clamped to exact knot values and with a
+Hermite-basis derivative correction at interior knots. This preserves
+the classic ggbump S-curve shape and honours the `smooth` parameter.
+`smooth` controls steepness: lower values (2–3) produce gentle curves,
+higher values (12–15) approach step functions.
+
+**`method = "hermite"`** — evaluates a single cubic Hermite spline
+(`stats::splinefunH()`) with zero slopes at all knots. Visually similar
+to sigmoid (the smoothstep polynomial 3t²−2t³ closely approximates the
+logistic) but computed in one pass. The `smooth` parameter is ignored.
 
 ### Architecture
 
-    geom_bump_ribbon():
+    geom_bump_ribbon(method = "sigmoid" | "hermite"):
       User data (x, y, group)
         → StatBumpRibbon$compute_group()
-          → sigmoid_path() for upper + lower edges at y ± width/2
+          → smooth_path(method) for upper + lower edges at y ± width/2
+            → "sigmoid": smooth_path_sigmoid() — clamped logistic + Hermite correction
+            → "hermite": smooth_path_hermite() — stats::splinefunH() with zero slopes
           → returns data.frame(x, y, ymin, ymax, avg_y)
         → GeomRibbon renders filled area
 
-    geom_bump_line():
+    geom_bump_line(method = "sigmoid" | "hermite"):
       User data (x, y, group)
         → StatBumpLine$compute_group()
-          → sigmoid_path() for centerline at y
+          → smooth_path(method) for centerline at y
           → returns data.frame(x, y, avg_y)
         → GeomPath renders stroked path
 
-    Both Stats share sigmoid_path() and the avg_y inverse-transform fix.
+    Both Stats share smooth_path(), the avg_y inverse-transform, and C1 continuity at joins.
 
 ## Comparison
 
-| Package          | What it does                                                 | What it lacks                                           |
-|------------------|--------------------------------------------------------------|---------------------------------------------------------|
-| **ggbump**       | Sigmoid *lines* via `geom_bump()`                            | No filled ribbons                                       |
-| **ggforce**      | Bezier *ribbons* via `geom_diagonal_wide()`                  | Bezier, not sigmoid curve shape                         |
-| **ggsankey**     | Sankey-style ribbon bumps                                    | *Stacked* positioning, not rank-positioned. GitHub-only |
-| **ggbumpribbon** | **Sigmoid filled ribbons and lines at exact rank positions** | —                                                       |
+| Package          | What it does                                                               | What it lacks                                           |
+|------------------|----------------------------------------------------------------------------|---------------------------------------------------------|
+| **ggbump**       | Sigmoid *lines* via `geom_bump()`                                          | No filled ribbons                                       |
+| **ggforce**      | Bezier *ribbons* via `geom_diagonal_wide()`                                | Bezier, not sigmoid curve shape                         |
+| **ggsankey**     | Sankey-style ribbon bumps                                                  | *Stacked* positioning, not rank-positioned. GitHub-only |
+| **ggbumpribbon** | **C1-continuous sigmoid filled ribbons and lines at exact rank positions** | —                                                       |
 
 ## Dependencies
 
-**Hard:** ggplot2 (\>= 3.5.0), rlang, scales — rlang and scales are
-already ggplot2 dependencies.
+**Hard:** ggplot2 (\>= 3.5.0), cli, rlang, scales — all are already
+ggplot2 dependencies. The `"hermite"` method uses `stats::splinefunH()`
+from base R.
 
 ## License
 

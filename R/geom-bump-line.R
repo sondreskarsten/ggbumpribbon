@@ -1,6 +1,6 @@
-#' Sigmoid-curved lines between rank positions
+#' Smooth-curved lines between rank positions
 #'
-#' `geom_bump_line()` renders smooth sigmoid curves connecting discrete
+#' `geom_bump_line()` renders smooth curves connecting discrete
 #' rank positions across time periods. It is the line counterpart to
 #' [geom_bump_ribbon()], producing stroked paths instead of filled areas.
 #'
@@ -39,8 +39,13 @@
 #'
 #' @inheritParams ggplot2::geom_path
 #' @param smooth Steepness of the sigmoid curve. Higher values produce
-#'   sharper S-shaped transitions. Default is `8`.
+#'   sharper S-shaped transitions. Only used when `method = "sigmoid"`.
+#'   Default is `8`.
 #' @param n Number of interpolation points per segment. Default is `100`.
+#' @param method Interpolation method. `"sigmoid"` (default) uses
+#'   logistic S-curves with C1 derivative correction at segment joins.
+#'   `"hermite"` uses cubic Hermite smoothstep interpolation via
+#'   [stats::splinefunH()]. See [geom_bump_ribbon()] for details.
 #'
 #' @returns A [ggplot2 layer][ggplot2::layer()] that can be added to a plot.
 #' @family bump geoms
@@ -77,6 +82,7 @@ geom_bump_line <- function(mapping = NULL,
                             ...,
                             smooth = 8,
                             n = 100,
+                            method = "sigmoid",
                             na.rm = FALSE,
                             show.legend = NA,
                             inherit.aes = TRUE) {
@@ -91,6 +97,7 @@ geom_bump_line <- function(mapping = NULL,
     params = rlang::list2(
       smooth = smooth,
       n      = n,
+      method = method,
       na.rm  = na.rm,
       ...
     )
@@ -105,11 +112,20 @@ StatBumpLine <- ggproto("StatBumpLine", Stat,
 
   required_aes = c("x", "y"),
 
-  extra_params = c("na.rm", "smooth", "n"),
+  extra_params = c("na.rm", "smooth", "n", "method"),
 
-  compute_group = function(data, scales, smooth = 8, n = 100) {
+  compute_group = function(data, scales, smooth = 8, n = 100,
+                           method = "sigmoid") {
+    if (!is.numeric(n) || length(n) != 1L || n < 2) {
+      cli_abort("{.arg n} must be a single integer >= 2, not {.val {n}}.")
+    }
+
     data <- data[order(data$x), ]
 
+    if (nrow(data) < 2) return(data.frame())
+
+    dup <- duplicated(data$x)
+    if (any(dup)) data <- data[!dup, ]
     if (nrow(data) < 2) return(data.frame())
 
     mean_y <- mean(data$y)
@@ -119,25 +135,15 @@ StatBumpLine <- ggproto("StatBumpLine", Stat,
       mean_y
     }
 
-    segs  <- nrow(data) - 1
-    parts <- vector("list", segs)
-
-    for (i in seq_len(segs)) {
-      seg <- sigmoid_path(data$x[i], data$x[i + 1],
-                          data$y[i], data$y[i + 1],
-                          smooth, n)
-      seg$avg_y <- avg_y
-      if (i < segs) seg <- seg[-n, ]
-      parts[[i]] <- seg
-    }
-
-    out <- do.call(rbind, parts)
+    path <- smooth_path(data$x, data$y, smooth = smooth, n = n,
+                        method = method)
+    path$avg_y <- avg_y
 
     aesthetic_cols <- setdiff(names(data), c("x", "y"))
     for (col in aesthetic_cols) {
-      out[[col]] <- data[[col]][1]
+      path[[col]] <- data[[col]][1]
     }
 
-    out
+    path
   }
 )

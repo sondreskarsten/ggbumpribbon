@@ -2,7 +2,7 @@
 % Please edit documentation in R/geom-bump-line.R
 \name{geom_bump_line}
 \alias{geom_bump_line}
-\title{Sigmoid-curved lines between rank positions}
+\title{Smooth-curved lines between rank positions}
 \usage{
 geom_bump_line(
   mapping = NULL,
@@ -11,6 +11,7 @@ geom_bump_line(
   ...,
   smooth = 8,
   n = 100,
+  method = "sigmoid",
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE
@@ -79,9 +80,15 @@ lists which parameters it can accept.
 }}
 
 \item{smooth}{Steepness of the sigmoid curve. Higher values produce
-sharper S-shaped transitions. Default is \code{8}.}
+sharper S-shaped transitions. Only used when \code{method = "sigmoid"}.
+Default is \code{8}.}
 
 \item{n}{Number of interpolation points per segment. Default is \code{100}.}
+
+\item{method}{Interpolation method. \code{"sigmoid"} (default) uses
+logistic S-curves with C1 derivative correction at segment joins.
+\code{"hermite"} uses cubic Hermite smoothstep interpolation via
+\code{\link[stats:splinefun]{stats::splinefunH()}}. See \code{\link[=geom_bump_ribbon]{geom_bump_ribbon()}} for details.}
 
 \item{na.rm}{If \code{FALSE}, the default, missing values are removed with
 a warning. If \code{TRUE}, missing values are silently removed.}
@@ -103,7 +110,7 @@ the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{ann
 A \link[ggplot2:layer]{ggplot2 layer} that can be added to a plot.
 }
 \description{
-\code{geom_bump_line()} renders smooth sigmoid curves connecting discrete
+\code{geom_bump_line()} renders smooth curves connecting discrete
 rank positions across time periods. It is the line counterpart to
 \code{\link[=geom_bump_ribbon]{geom_bump_ribbon()}}, producing stroked paths instead of filled areas.
 }
