@@ -96,7 +96,7 @@
   following the ggplot2 convention. Zero marginal dependency cost since
   `cli` is already a transitive dependency of ggplot2.
 
-* Test suite expanded from 22 to 42 tests, covering both methods,
+* Test suite expanded from 22 to 50 tests, covering both methods,
   segment-join accuracy, duplicate-x handling, smooth parameter effect,
   input validation (n, width, smooth), and scale_fill_rank auto-range.
 
