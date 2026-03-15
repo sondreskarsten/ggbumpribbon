@@ -1,3 +1,76 @@
+# ggbumpribbon 0.2.0
+
+## Breaking changes
+
+* Row counts for multi-segment groups changed. The old per-segment
+  sigmoid architecture produced `n * (k-1) - (k-2)` rows for `k`
+  knots. The sigmoid method now produces `n * (k-1) - (k-2)` rows
+  (identical), and the hermite method produces `n * (k-1) + 1` rows.
+  Code that depended on exact row counts may need updating.
+
+## Bug fixes
+
+* **Fixed segment-join discontinuity in multi-period ribbons**
+  (#1). When a group had 3+ time points, the v0.1.0 architecture
+  computed each sigmoid segment independently and concatenated them,
+  producing two artefacts at every interior knot:
+
+    1. **Positional gap (C0 discontinuity):** The logistic sigmoid
+       σ(t) on t ∈ [−s, s] never reaches exactly 0 or 1, so adjacent
+       segments did not share the same y-value at their join. For
+       `smooth = 8` the gap was ~0.00057 data units per join —
+       sub-pixel in most cases but present.
+
+    2. **Derivative kink (C1 discontinuity):** Each segment's slope
+       at its endpoint is σ′(±s) · Δy / Δx, which depends on the
+       segment's y-range. At a direction reversal (e.g. rank goes
+       1→5→2), the outgoing slope of segment k and the incoming slope
+       of segment k+1 differ, producing a visible corner. This was
+       the artefact reported in the screenshot.
+
+  Both are now fixed. See `method` parameter below.
+
+* Duplicate x-values within a group are now silently deduplicated
+  (keeping the first occurrence) instead of producing degenerate
+  zero-width sigmoid segments.
+
+## New features
+
+* New `method` parameter for `geom_bump_ribbon()` with two options:
+
+    - **`"sigmoid"`** (default): preserves the logistic S-curve visual
+      character. Each segment is a clamped sigmoid (rescaled so
+      endpoints map to exact knot values), with a Hermite-basis
+      derivative correction that drives the slope to zero at every
+      interior knot. This eliminates both the positional gap and the
+      derivative kink while keeping the sigmoid shape and honouring
+      the `smooth` parameter.
+
+    - **`"hermite"`**: uses `stats::splinefunH()` with zero slopes at
+      all knots. A single spline is evaluated across all knots in one
+      pass, with C1 continuity guaranteed by construction. The `smooth`
+      parameter is ignored. Visually similar (the cubic smoothstep
+      3t² − 2t³ closely approximates the logistic function) but not
+      identical.
+
+* The `smooth` parameter now works correctly with the `"sigmoid"`
+  method across all values including previously broken edge cases
+  (`smooth = 0` produced constant output, negative values reversed the
+  curve).
+
+## Internal changes
+
+* New internal functions `smooth_path()`, `smooth_path_sigmoid()`, and
+  `smooth_path_hermite()` in `R/sigmoid.R`. The original
+  `sigmoid_path()` is retained for backward compatibility but is no
+  longer called by `StatBumpRibbon`.
+
+* Removed unused `importFrom(rlang, .data)` from NAMESPACE.
+
+* Test suite expanded from 22 to 36 tests, covering both methods,
+  segment-join accuracy, duplicate-x handling, and smooth parameter
+  effect.
+
 # ggbumpribbon 0.1.0
 
 * Initial release.

@@ -4,7 +4,7 @@
 \name{geom_bump_ribbon}
 \alias{geom_bump_ribbon}
 \alias{StatBumpRibbon}
-\title{Sigmoid-curved filled ribbons for rank comparison}
+\title{Smooth-curved filled ribbons for rank comparison}
 \usage{
 geom_bump_ribbon(
   mapping = NULL,
@@ -14,6 +14,7 @@ geom_bump_ribbon(
   smooth = 8,
   n = 100,
   width = 0.8,
+  method = "sigmoid",
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE
@@ -82,11 +83,17 @@ lists which parameters it can accept.
 }}
 
 \item{smooth}{Steepness of the sigmoid curve. Higher values produce
-sharper S-shaped transitions. Default is \code{8}.}
+sharper S-shaped transitions. Only used when \code{method = "sigmoid"}.
+Default is \code{8}.}
 
 \item{n}{Number of interpolation points per segment. Default is \code{100}.}
 
 \item{width}{Ribbon full width in data units. Default is \code{0.8}.}
+
+\item{method}{Interpolation method. \code{"sigmoid"} (default) uses
+logistic S-curves with C1 derivative correction at segment joins.
+\code{"hermite"} uses cubic Hermite smoothstep interpolation via
+\code{\link[stats:splinefun]{stats::splinefunH()}}. See section \strong{Interpolation methods}.}
 
 \item{na.rm}{If \code{FALSE}, the default, missing values are removed with
 a warning. If \code{TRUE}, missing values are silently removed.}
@@ -108,7 +115,7 @@ the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{ann
 A \link[ggplot2:layer]{ggplot2 layer} that can be added to a plot.
 }
 \description{
-\code{geom_bump_ribbon()} renders filled ribbons that follow sigmoid curves
+\code{geom_bump_ribbon()} renders filled ribbons that follow smooth curves
 between discrete rank positions. It is the filled-area counterpart to
 ggbump's \code{geom_bump()} (\url{https://github.com/davidsjoberg/ggbump}).
 }
@@ -138,6 +145,36 @@ rank-based fill via \code{after_stat(avg_y)}.}
 }
 }
 
+\section{Interpolation methods}{
+
+
+When a group has 3 or more time points, adjacent segments must be
+joined.
+
+\describe{
+\item{\code{"sigmoid"} (default)}{Each segment follows a logistic sigmoid
+\eqn{\sigma(t) = 1/(1+e^{-t})} on \eqn{t \in [-s, s]} where
+\eqn{s} is the \code{smooth} parameter. Endpoints are clamped to
+exact knot values by rescaling \eqn{\sigma} to \eqn{[0, 1]},
+and a Hermite-basis derivative correction drives the slope to
+zero at every interior knot, guaranteeing C1 (first-derivative)
+continuity across segments. The \code{smooth} parameter controls
+steepness: lower values (e.g. 2--3) give gentle S-curves, higher
+values (e.g. 12--15) give near-step-function transitions.}
+\item{\code{"hermite"}}{Uses \code{\link[stats:splinefun]{stats::splinefunH()}} with zero slopes at
+all knots (the cubic Hermite "smoothstep"). This is
+mathematically simpler: a single spline is evaluated across all
+knots, with C1 continuity guaranteed by construction. The
+\code{smooth} parameter is ignored. The visual shape is similar to
+\code{"sigmoid"} but not identical --- the cubic polynomial
+\eqn{3t^2 - 2t^3} has slightly different curvature distribution
+than the logistic function.}
+}
+
+Both methods produce identical results for 2-point groups (a single
+segment has no join to worry about).
+}
+
 \examples{
 library(ggplot2)
 
@@ -160,6 +197,12 @@ df3 <- data.frame(
 )
 ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(alpha = 0.7) +
+  scale_fill_viridis_c() +
+  scale_y_reverse()
+
+# Hermite method
+ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(method = "hermite", alpha = 0.7) +
   scale_fill_viridis_c() +
   scale_y_reverse()
 

@@ -6,7 +6,7 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Sigmoid-curved filled ribbons for rank comparison charts in ggplot2.
+Sigmoid-curved filled ribbons for rank comparison charts in ggplot2. Supports logistic sigmoid and cubic Hermite interpolation with C1-continuous segment joins.
 
 <a href="https://raw.githubusercontent.com/sondreskarsten/ggbumpribbon/main/man/figures/README-reputation.png"><img src="man/figures/README-reputation.png" width="55%" /></a>
 
@@ -193,7 +193,8 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `smooth` | `8` | Steepness of the sigmoid curve. Higher = sharper S-shape |
+| `method` | `"sigmoid"` | Interpolation method: `"sigmoid"` or `"hermite"` (see below) |
+| `smooth` | `8` | Steepness of the sigmoid curve. Higher = sharper S-shape. Only used with `method = "sigmoid"` |
 | `width` | `0.8` | Ribbon full width in data units |
 | `n` | `100` | Interpolation points per segment |
 | `alpha` | `0.85` | Ribbon transparency |
@@ -205,6 +206,34 @@ ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
 | `avg_y` | Mean of all y values in the group — useful for rank-based fill via `after_stat(avg_y)` |
 | `ymin` | Lower ribbon boundary |
 | `ymax` | Upper ribbon boundary |
+
+## Interpolation methods
+
+When a group has 3+ time points, adjacent curved segments must be
+joined smoothly. `geom_bump_ribbon()` offers two methods, both
+guaranteeing C1 (first-derivative) continuity at every join:
+
+**`method = "sigmoid"`** (default) — each segment follows a logistic
+sigmoid σ(t) = 1/(1+e⁻ᵗ), clamped to exact knot values and with a
+Hermite-basis derivative correction at interior knots. This preserves
+the classic ggbump S-curve shape and honours the `smooth` parameter.
+
+**`method = "hermite"`** — evaluates a single cubic Hermite spline
+(`stats::splinefunH()`) with zero slopes at all knots. Visually
+similar to sigmoid (the smoothstep polynomial 3t²−2t³ closely
+approximates the logistic) but computed in one pass. The `smooth`
+parameter is ignored.
+
+```r
+# Compare methods on a 4-period chart
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(method = "sigmoid") +
+  scale_fill_viridis_c() + scale_y_reverse()
+
+ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+  geom_bump_ribbon(method = "hermite") +
+  scale_fill_viridis_c() + scale_y_reverse()
+```
 
 ## Note on `scale_y_reverse()`
 
@@ -229,14 +258,16 @@ scale_fill_gradientn(
 ```
 User data (x, y, group)
   → StatBumpRibbon$compute_group()
-    → sigmoid_path() for upper/lower edges
+    → smooth_path(method) for upper/lower edges
+      → "sigmoid": smooth_path_sigmoid() — clamped logistic + Hermite correction
+      → "hermite": smooth_path_hermite() — stats::splinefunH() with zero slopes
     → returns data.frame(x, y, ymin, ymax, avg_y)
   → GeomRibbon renders filled polygons
 ```
 
 ## Dependencies
 
-**Hard:** ggplot2 (>= 3.5.0), rlang, scales — rlang and scales are already ggplot2 dependencies.
+**Hard:** ggplot2 (>= 3.5.0), rlang, scales — rlang and scales are already ggplot2 dependencies. The `"hermite"` method uses `stats::splinefunH()` from base R.
 
 ## License
 
