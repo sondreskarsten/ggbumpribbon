@@ -182,7 +182,7 @@ mt_long <- data.frame(
 
 ggplot(mt_long, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon() +
-  scale_fill_rank(limits = c(1, 10)) +
+  scale_fill_rank() +
   scale_y_reverse() +
   theme_bump()
 ```
@@ -225,12 +225,12 @@ approximates the logistic) but computed in one pass. The `smooth`
 parameter is ignored.
 
 ```r
-# Compare methods on a 4-period chart
-ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+# Compare methods on a multi-period chart
+ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(method = "sigmoid") +
   scale_fill_viridis_c() + scale_y_reverse()
 
-ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
+ggplot(df3, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon(method = "hermite") +
   scale_fill_viridis_c() + scale_y_reverse()
 ```
@@ -250,7 +250,7 @@ scale_fill_gradientn(
 
 | Function | Description |
 |----------|-------------|
-| `scale_fill_rank()` | Green-yellow-red gradient scale with `guide = "none"` default |
+| `scale_fill_rank()` | Green-yellow-red gradient scale with `guide = "none"`. Defaults to auto-range from data; pass `limits = c(lo, hi)` for explicit control |
 | `theme_bump()` | Dark background theme for rank comparison infographics |
 
 ## Architecture
@@ -267,7 +267,7 @@ User data (x, y, group)
 
 ## Dependencies
 
-**Hard:** ggplot2 (>= 3.5.0), rlang, scales — rlang and scales are already ggplot2 dependencies. The `"hermite"` method uses `stats::splinefunH()` from base R.
+**Hard:** ggplot2 (>= 3.5.0), cli, rlang, scales — all are already ggplot2 dependencies. The `"hermite"` method uses `stats::splinefunH()` from base R.
 
 ## License
 
