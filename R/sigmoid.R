@@ -52,6 +52,13 @@ smooth_path_sigmoid <- function(x_knots, y_knots, smooth = 8, n = 100L) {
   n_seg <- n_knots - 1L
   n_per <- as.integer(n)
 
+  if (smooth <= 0) {
+    n_total <- n_per * n_seg - (n_seg - 1L)
+    x_out <- seq(x_knots[1L], x_knots[n_knots], length.out = n_total)
+    sfun <- stats::approxfun(x_knots, y_knots)
+    return(data.frame(x = x_out, y = sfun(x_out)))
+  }
+
   sigma_lo <- 1 / (1 + exp(smooth))
   sigma_hi <- 1 / (1 + exp(-smooth))
   sigma_range <- sigma_hi - sigma_lo

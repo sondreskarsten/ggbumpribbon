@@ -34,6 +34,31 @@
   (keeping the first occurrence) instead of producing degenerate
   zero-width sigmoid segments.
 
+* **`smooth <= 0` no longer crashes** the sigmoid method. Previously,
+  `smooth = 0` caused a division-by-zero (σ(0) − σ(−0) = 0) producing
+  NaN output. Now `smooth <= 0` falls back to linear interpolation via
+  `stats::approxfun()`, following base R's pattern where degenerate
+  parameters yield the limiting case rather than an error.
+
+* **`width < 0` no longer produces invisible ribbons.** Negative width
+  is now treated as positive (`abs(width)`), consistent with how
+  ggplot2's own geoms handle negative size parameters. Previously,
+  negative width inverted `ymin`/`ymax`, causing `GeomRibbon` to
+  render nothing silently.
+
+* **`n < 2` now errors with an informative message** via
+  `cli::cli_abort()`, following the ggplot2 convention for parameter
+  validation in `compute_group`. Previously, `n = 0` crashed with an
+  opaque `"arguments imply differing number of rows"` error, and
+  `n = 1` produced a single-point degenerate output.
+
+* **`scale_fill_rank()` now defaults to `limits = NULL`** (auto-range
+  from data) instead of `limits = c(1, 60)`. The previous default
+  meant that any dataset with fewer than ~30 groups would show nearly
+  monochromatic fills, because all `avg_y` values mapped to the green
+  end of the gradient. Users who need explicit limits can still pass
+  `limits = c(1, 60)` or any other range.
+
 ## New features
 
 * New `method` parameter for `geom_bump_ribbon()` with two options:
@@ -67,9 +92,13 @@
 
 * Removed unused `importFrom(rlang, .data)` from NAMESPACE.
 
-* Test suite expanded from 22 to 36 tests, covering both methods,
-  segment-join accuracy, duplicate-x handling, and smooth parameter
-  effect.
+* Added `cli` to Imports for `cli::cli_abort()` parameter validation,
+  following the ggplot2 convention. Zero marginal dependency cost since
+  `cli` is already a transitive dependency of ggplot2.
+
+* Test suite expanded from 22 to 42 tests, covering both methods,
+  segment-join accuracy, duplicate-x handling, smooth parameter effect,
+  input validation (n, width, smooth), and scale_fill_rank auto-range.
 
 # ggbumpribbon 0.1.0
 

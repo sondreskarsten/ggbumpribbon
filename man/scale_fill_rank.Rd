@@ -6,7 +6,7 @@
 \usage{
 scale_fill_rank(
   colors = c("#2ecc71", "#a8e063", "#f7dc6f", "#f0932b", "#eb4d4b", "#c0392b"),
-  limits = c(1, 60),
+  limits = NULL,
   ...
 )
 }
@@ -14,8 +14,8 @@ scale_fill_rank(
 \item{colors}{Character vector of gradient colours. Default is a
 six-colour green-yellow-red ramp.}
 
-\item{limits}{Numeric vector of length 2 giving the scale limits.
-Default \code{c(1, 60)}.}
+\item{limits}{Numeric vector of length 2 giving the scale limits, or
+\code{NULL} (default) to compute limits from the data range.}
 
 \item{...}{Passed to \code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
 }
@@ -35,6 +35,6 @@ df <- data.frame(
 )
 ggplot(df, aes(x, y, group = group, fill = after_stat(avg_y))) +
   geom_bump_ribbon() +
-  scale_fill_rank(limits = c(1, 5)) +
+  scale_fill_rank() +
   scale_y_reverse()
 }

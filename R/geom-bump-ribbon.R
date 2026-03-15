@@ -154,6 +154,10 @@ StatBumpRibbon <- ggproto("StatBumpRibbon", Stat,
 
   compute_group = function(data, scales, smooth = 8, n = 100, width = 0.8,
                            method = "sigmoid") {
+    if (!is.numeric(n) || length(n) != 1L || n < 2) {
+      cli_abort("{.arg n} must be a single integer >= 2, not {.val {n}}.")
+    }
+
     data <- data[order(data$x), ]
 
     if (nrow(data) < 2) return(data.frame())
@@ -162,6 +166,7 @@ StatBumpRibbon <- ggproto("StatBumpRibbon", Stat,
     if (any(dup)) data <- data[!dup, ]
     if (nrow(data) < 2) return(data.frame())
 
+    width <- abs(width)
     hw    <- width / 2
     avg_y <- mean(data$y)
 

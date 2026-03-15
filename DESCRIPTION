@@ -17,6 +17,7 @@ BugReports: https://github.com/sondreskarsten/ggbumpribbon/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    cli,
     ggplot2 (>= 3.5.0),
     rlang (>= 1.0.0),
     scales

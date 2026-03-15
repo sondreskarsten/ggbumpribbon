@@ -111,3 +111,47 @@ test_that("method parameter switches interpolation", {
   out_h <- StatBumpRibbon$compute_group(group_data, NULL, method = "hermite")
   expect_false(nrow(out_s) == nrow(out_h))
 })
+
+test_that("n < 2 errors with informative message", {
+  group_data <- data.frame(x = 1:2, y = c(1, 5))
+  expect_error(
+    StatBumpRibbon$compute_group(group_data, NULL, n = 0),
+    "n.*must be.*>= 2"
+  )
+  expect_error(
+    StatBumpRibbon$compute_group(group_data, NULL, n = 1),
+    "n.*must be.*>= 2"
+  )
+  expect_error(
+    StatBumpRibbon$compute_group(group_data, NULL, n = -5),
+    "n.*must be.*>= 2"
+  )
+})
+
+test_that("negative width is treated as positive", {
+  group_data <- data.frame(x = 1:2, y = c(1, 5))
+  out_neg <- StatBumpRibbon$compute_group(group_data, NULL, width = -0.8)
+  out_pos <- StatBumpRibbon$compute_group(group_data, NULL, width = 0.8)
+  expect_equal(out_neg$ymin, out_pos$ymin)
+  expect_equal(out_neg$ymax, out_pos$ymax)
+  expect_true(all(out_neg$ymax > out_neg$ymin))
+})
+
+test_that("smooth = 0 produces linear interpolation (sigmoid method)", {
+  group_data <- data.frame(x = 1:2, y = c(1, 5))
+  out <- StatBumpRibbon$compute_group(group_data, NULL, smooth = 0, n = 100,
+                                       width = 0.8, method = "sigmoid")
+  expect_true(nrow(out) > 0)
+  expect_false(any(is.nan(out$ymin)))
+  mid <- nrow(out) %/% 2
+  expect_equal(out$y[mid], 3, tolerance = 0.1)
+})
+
+test_that("smooth < 0 falls back to linear (sigmoid method)", {
+  group_data <- data.frame(x = 1:2, y = c(1, 5))
+  out <- StatBumpRibbon$compute_group(group_data, NULL, smooth = -3, n = 100,
+                                       width = 0.8, method = "sigmoid")
+  expect_true(nrow(out) > 0)
+  expect_false(any(is.nan(out$ymin)))
+  expect_true(out$y[1] < out$y[nrow(out)])
+})
