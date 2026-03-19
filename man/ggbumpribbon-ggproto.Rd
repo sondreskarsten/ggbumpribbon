@@ -7,6 +7,9 @@
 \alias{StatBumpRibbon}
 \alias{ggbumpribbon-ggproto}
 \title{Base ggproto classes for ggbumpribbon}
+\value{
+ggproto objects that should not be called directly.
+}
 \description{
 These ggproto objects implement the statistical transformations for
 bump ribbon and line charts. They are exported for extensibility but

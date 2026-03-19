@@ -8,6 +8,7 @@
 #' should typically be used through [geom_bump_ribbon()] and
 #' [geom_bump_line()].
 #'
+#' @returns ggproto objects that should not be called directly.
 #' @seealso [ggplot2::Stat], [ggplot2::ggproto()]
 #' @name ggbumpribbon-ggproto
 #' @rdname ggbumpribbon-ggproto
