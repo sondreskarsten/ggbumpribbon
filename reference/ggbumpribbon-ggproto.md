@@ -7,6 +7,10 @@ typically be used through
 and
 [`geom_bump_line()`](https://sondreskarsten.github.io/ggbumpribbon/reference/geom_bump_line.md).
 
+## Value
+
+ggproto objects that should not be called directly.
+
 ## See also
 
 [ggplot2::Stat](https://ggplot2.tidyverse.org/reference/Stat.html),
